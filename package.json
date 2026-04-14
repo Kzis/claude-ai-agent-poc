@@ -1,0 +1,26 @@
+{
+  "name": "claude-ai-agent-poc",
+  "version": "1.0.0",
+  "description": "Multi-agent POC: PM/PO + Software Engineer + QA agents powered by Claude",
+  "main": "dist/orchestrator.js",
+  "scripts": {
+    "build": "tsc",
+    "pm": "ts-node src/agents/pm-po/index.ts",
+    "se": "ts-node src/agents/software-engineer/index.ts",
+    "qa": "ts-node src/agents/qa/index.ts",
+    "orchestrate": "ts-node src/orchestrator.ts",
+    "setup-notion": "ts-node src/setup-notion.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@notionhq/client": "^2.2.15",
+    "@octokit/rest": "^21.0.2",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}
