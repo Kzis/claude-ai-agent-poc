@@ -163,22 +163,12 @@ export async function main(): Promise<void> {
 
   try {
     const qaResult = await qaRun({
-<<<<<<< Updated upstream
-      taskId: seTaskId,
-      prUrl: sePrUrl,
-=======
->>>>>>> Stashed changes
       release: "Release-1",
     });
 
     if (qaResult.success) {
-<<<<<<< Updated upstream
-      const rec = qaResult.recommendation ?? "(no recommendation)";
-      const bugsFound = String(qaResult.bugsFound ?? 0);
-=======
       const rec = (qaResult.report && qaResult.report.recommendation) ?? "(no recommendation)";
       const bugsFound = String((qaResult.report && qaResult.report.bugsFiledCount) ?? 0);
->>>>>>> Stashed changes
       console.log(
         GREEN +
           "[Orchestrator] QA phase complete. Bugs found: " +
@@ -188,11 +178,7 @@ export async function main(): Promise<void> {
           RESET
       );
 
-<<<<<<< Updated upstream
-      if (qaResult.recommendation === "go") {
-=======
       if (qaResult.report && qaResult.report.recommendation === "GO") {
->>>>>>> Stashed changes
         header("PIPELINE COMPLETE — GO for release", GREEN);
       } else {
         header("PIPELINE COMPLETE — NO-GO: bugs need fixing", RED);

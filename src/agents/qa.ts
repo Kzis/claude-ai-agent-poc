@@ -22,11 +22,8 @@ import type { Task, BugReport, BugSeverity, ToolResult } from "../tools/types";
 export interface QaRunInput {
   release?: string;
   maxIterations?: number;
-<<<<<<< Updated upstream
-=======
   taskId?: string;
   prUrl?: string;
->>>>>>> Stashed changes
 }
 
 export interface QaReport {
@@ -44,11 +41,8 @@ export interface QaReport {
 export interface QaRunResult {
   success: boolean;
   report: QaReport;
-<<<<<<< Updated upstream
-=======
   recommendation?: string;
   bugsFound?: number;
->>>>>>> Stashed changes
   error?: string;
 }
 
@@ -206,11 +200,7 @@ async function executeTool(
     }
 
     case "run_tests": {
-<<<<<<< Updated upstream
-      const args = input as RunTestsInput;
-=======
       const args = input as unknown as RunTestsInput;
->>>>>>> Stashed changes
       const projectRoot = path.resolve(__dirname, "../../");
       const details: string[] = [];
       let passed = true;
@@ -239,11 +229,7 @@ async function executeTool(
     }
 
     case "file_bug_report": {
-<<<<<<< Updated upstream
-      const args = input as FileBugReportInput;
-=======
       const args = input as unknown as FileBugReportInput;
->>>>>>> Stashed changes
       console.log("[QA Agent] Filing bug: " + args.title + " (" + args.severity + ")");
       const result = await createBugReport({
         title: args.title,
@@ -258,11 +244,7 @@ async function executeTool(
     }
 
     case "approve_task": {
-<<<<<<< Updated upstream
-      const args = input as ApproveTaskInput;
-=======
       const args = input as unknown as ApproveTaskInput;
->>>>>>> Stashed changes
       console.log("[QA Agent] Approving task " + args.taskId);
       const workLog = args.notes ? "QA APPROVED: " + args.notes : "QA APPROVED: All acceptance tests passed.";
       const result = await updateTask(args.taskId, { status: "Done", workLog });
@@ -274,11 +256,7 @@ async function executeTool(
     }
 
     case "reject_task": {
-<<<<<<< Updated upstream
-      const args = input as RejectTaskInput;
-=======
       const args = input as unknown as RejectTaskInput;
->>>>>>> Stashed changes
       console.log("[QA Agent] Rejecting task " + args.taskId + ": " + args.reason);
       const result = await updateTask(args.taskId, { status: "In Progress", workLog: "QA REJECTED: " + args.reason });
       if (result.success) {
@@ -289,11 +267,7 @@ async function executeTool(
     }
 
     case "generate_qa_report": {
-<<<<<<< Updated upstream
-      const args = input as GenerateQaReportInput;
-=======
       const args = input as unknown as GenerateQaReportInput;
->>>>>>> Stashed changes
       const passedCount = state.approvedTasks.length;
       const failedCount = state.rejectedTasks.length;
       const qaReport: QaReport = {
@@ -346,12 +320,7 @@ export async function run(input: QaRunInput): Promise<QaRunResult> {
     "- After all tasks: call generate_qa_report once.",
     "- NO-GO if any Critical/High bug was filed or any task rejected.",
     "- GO only if all tasks passed and no Critical/High bugs.",
-<<<<<<< Updated upstream
-  ].join("
-");
-=======
   ].join("\n");
->>>>>>> Stashed changes
 
   const userMessage = [
     "Please perform a full QA review now.",
@@ -362,13 +331,7 @@ export async function run(input: QaRunInput): Promise<QaRunResult> {
     "3. If fail: file_bug_report then reject_task.",
     "4. If pass: approve_task.",
     "5. After all tasks: generate_qa_report.",
-<<<<<<< Updated upstream
-  ].join("
-");
-
-=======
   ].join("\n");
->>>>>>> Stashed changes
   const messages: Anthropic.MessageParam[] = [{ role: "user", content: userMessage }];
   let iteration = 0;
 

@@ -212,12 +212,7 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
     "5. Call create_draft_pr with conventional-commits title and markdown body.",
     "6. Call update_task_notion: status=In Review, PR URL, and work log.",
     "7. Respond with a final text summary.",
-<<<<<<< Updated upstream
-  ].join("
-");
-=======
   ].join("\n");
->>>>>>> Stashed changes
 
   const taskContext = input.task
     ? [
@@ -230,20 +225,10 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
         "Release: " + input.task.release,
         "",
         "Proceed with steps 2-7 (task already known, skip step 1).",
-<<<<<<< Updated upstream
-      ].join("
-")
-    : "No task pre-assigned. Call get_backlog_tasks with status=Backlog.";
-
-  const userMessage = taskContext + "
-
-Complete all steps then provide a final summary.";
-=======
       ].join("\n")
     : "No task pre-assigned. Call get_backlog_tasks with status=Backlog.";
 
   const userMessage = taskContext + "\n\nComplete all steps then provide a final summary.";
->>>>>>> Stashed changes
 
   const messages: Anthropic.MessageParam[] = [{ role: "user", content: userMessage }];
 
@@ -316,9 +301,6 @@ Complete all steps then provide a final summary.";
     console.warn("[SE Agent] Unexpected stop_reason: " + response.stop_reason);
     break;
   }
-<<<<<<< Updated upstream
-
-=======
   if (iteration >= maxIterations) {
     console.warn("[SE Agent] Reached max iterations. Stopping.");
   }
@@ -327,4 +309,3 @@ Complete all steps then provide a final summary.";
 
   return { success: true, task: resolvedTask, branchName: resolvedBranch, prUrl: resolvedPrUrl };
 }
->>>>>>> Stashed changes
