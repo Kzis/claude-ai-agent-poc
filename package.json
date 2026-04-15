@@ -5,7 +5,7 @@
   "main": "dist/orchestrator.js",
   "scripts": {
     "build": "tsc",
-    "pm": "ts-node src/agents/pm-po/index.ts",
+    "pm": "ts-node src/agents/pm.ts",
     "se": "ts-node src/agents/software-engineer/index.ts",
     "qa": "ts-node src/agents/qa/index.ts",
     "orchestrate": "ts-node src/orchestrator.ts",
