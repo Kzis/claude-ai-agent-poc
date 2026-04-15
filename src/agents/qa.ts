@@ -22,8 +22,6 @@ import type { Task, BugReport, BugSeverity, ToolResult } from "../tools/types";
 export interface QaRunInput {
   release?: string;
   maxIterations?: number;
-  taskId?: string;
-  prUrl?: string;
 }
 
 export interface QaReport {
@@ -41,8 +39,6 @@ export interface QaReport {
 export interface QaRunResult {
   success: boolean;
   report: QaReport;
-  recommendation?: string;
-  bugsFound?: number;
   error?: string;
 }
 
@@ -332,6 +328,7 @@ export async function run(input: QaRunInput): Promise<QaRunResult> {
     "4. If pass: approve_task.",
     "5. After all tasks: generate_qa_report.",
   ].join("\n");
+
   const messages: Anthropic.MessageParam[] = [{ role: "user", content: userMessage }];
   let iteration = 0;
 
