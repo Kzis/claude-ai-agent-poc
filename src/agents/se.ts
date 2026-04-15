@@ -76,7 +76,7 @@ async function executeTool(toolName: string, input: Record<string, unknown>): Pr
   }
 }
 
-export interface SeRunInput { task?: Task; }
+export interface SeRunInput { task?: Task; taskId?: string; release?: string; }
 
 export interface SeRunResult {
   success: boolean;
