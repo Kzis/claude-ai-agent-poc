@@ -7,7 +7,7 @@
     "build": "tsc",
     "pm": "ts-node src/agents/pm.ts",
     "se": "ts-node src/agents/software-engineer/index.ts",
-    "qa": "ts-node src/agents/qa/index.ts",
+    "qa": "ts-node src/agents/qa.ts",
     "orchestrate": "ts-node src/orchestrator.ts",
     "setup-notion": "ts-node src/setup-notion.ts"
   },
