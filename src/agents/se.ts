@@ -1,11 +1,9 @@
 /**
  * SE (Software Engineer) Agent -- src/agents/se.ts
- *
- * Accepts an optional Task as input. If none is provided, fetches the highest-priority
- * Backlog task from Notion.
- *
- * Pattern: same agentic tool-loop as src/agents/pm.ts
+ * Accepts optional Task. Fetches highest-priority Backlog task if none given.
+ * Creates GitHub branch, opens draft PR, updates Notion task to In Review.
  */
+
 import Anthropic from "@anthropic-ai/sdk";
 import { config } from "../config";
 import { getTasks, updateTask } from "../tools/notion";
@@ -14,180 +12,71 @@ import type { Task, ToolResult } from "../tools/types";
 
 const client = new Anthropic({ apiKey: config.anthropic.apiKey });
 
-// --- Tool definitions ---
-
 const tools: Anthropic.Tool[] = [
   {
     name: "get_backlog_tasks",
-    description:
-      "Fetch tasks from the Notion backlog, optionally filtered by status. " +
-      "Use this to find the highest-priority unclaimed Backlog task.",
-    input_schema: {
-      type: "object" as const,
-      properties: {
-        status: {
-          type: "string",
-          enum: ["Backlog", "In Progress", "In Review", "QA", "Done", "Blocked"],
-          description: "Filter by status. Use Backlog to find available tasks.",
-        },
-      },
-      required: [],
-    },
+    description: "Fetch backlog tasks from Notion. Pass status=Backlog to find available.",
+    input_schema: { type: "object" as const, properties: { status: { type: "string", enum: ["Backlog","In Progress","In Review","QA","Done","Blocked"] } }, required: [] },
   },
   {
     name: "update_task_status",
-    description:
-      "Update a Notion task status and optionally the assignee. " +
-      "Call with status=In Progress and assignee=SE Agent to claim a task.",
-    input_schema: {
-      type: "object" as const,
-      properties: {
-        taskId: { type: "string", description: "The Notion page ID of the task." },
-        status: { type: "string", enum: ["Backlog", "In Progress", "In Review", "QA", "Done", "Blocked"], description: "New status." },
-        assignee: { type: "string", description: "Assignee name. Use SE Agent when claiming." },
-      },
-      required: ["taskId", "status"],
-    },
+    description: "Update task status/assignee. Use In Progress + SE Agent to claim.",
+    input_schema: { type: "object" as const, properties: { taskId: { type: "string" }, status: { type: "string", enum: ["Backlog","In Progress","In Review","QA","Done","Blocked"] }, assignee: { type: "string" } }, required: ["taskId","status"] },
   },
   {
     name: "create_github_branch",
-    description:
-      "Create a feature branch in GitHub from main. " +
-      "Convention: feature/<shortId>-<slugified-title>. Call after claiming the task.",
-    input_schema: {
-      type: "object" as const,
-      properties: {
-        branchName: { type: "string", description: "Branch name, e.g. feature/abc12345-add-login-page." },
-        fromBranch: { type: "string", description: "Base branch. Defaults to main." },
-      },
-      required: ["branchName"],
-    },
+    description: "Create feature branch in GitHub from main. Convention: feature/<8charId>-<slug>.",
+    input_schema: { type: "object" as const, properties: { branchName: { type: "string" }, fromBranch: { type: "string" } }, required: ["branchName"] },
   },
   {
     name: "create_draft_pr",
-    description:
-      "Open a draft PR on GitHub. Title uses conventional commits (feat: ...). " +
-      "Body includes summary, Notion task ID, and what was implemented.",
-    input_schema: {
-      type: "object" as const,
-      properties: {
-        title: { type: "string", description: "PR title in conventional commits format." },
-        body: { type: "string", description: "Markdown body with summary, task ID, and changes." },
-        headBranch: { type: "string", description: "The feature branch name." },
-        baseBranch: { type: "string", description: "Target branch. Defaults to main." },
-      },
-      required: ["title", "body", "headBranch"],
-    },
+    description: "Open draft PR. Title: conventional-commits. Body: markdown with task ID.",
+    input_schema: { type: "object" as const, properties: { title: { type: "string" }, body: { type: "string" }, headBranch: { type: "string" }, baseBranch: { type: "string" } }, required: ["title","body","headBranch"] },
   },
   {
     name: "update_task_notion",
-    description:
-      "Update the Notion task with PR URL, work log, and In Review status. " +
-      "Call this last after the PR is opened.",
-    input_schema: {
-      type: "object" as const,
-      properties: {
-        taskId: { type: "string", description: "The Notion page ID of the task." },
-        status: { type: "string", enum: ["Backlog", "In Progress", "In Review", "QA", "Done", "Blocked"], description: "Set to In Review." },
-        prUrl: { type: "string", description: "URL of the draft PR." },
-        workLog: { type: "string", description: "Concise work log: what was implemented and files changed." },
-      },
-      required: ["taskId"],
-    },
+    description: "Update Notion task: PR URL, work log, status=In Review.",
+    input_schema: { type: "object" as const, properties: { taskId: { type: "string" }, status: { type: "string", enum: ["Backlog","In Progress","In Review","QA","Done","Blocked"] }, prUrl: { type: "string" }, workLog: { type: "string" } }, required: ["taskId"] },
   },
 ];
 
-// --- Tool input types ---
+interface GetBacklogTasksInput { status?: string; }
+interface UpdateTaskStatusInput { taskId: string; status: Task["status"]; assignee?: string; }
+interface CreateGithubBranchInput { branchName: string; fromBranch?: string; }
+interface CreateDraftPrInput { title: string; body: string; headBranch: string; baseBranch?: string; }
+interface UpdateTaskNotionInput { taskId: string; status?: Task["status"]; prUrl?: string; workLog?: string; }
 
-interface GetBacklogTasksInput {
-  status?: string;
-}
-
-interface UpdateTaskStatusInput {
-  taskId: string;
-  status: Task["status"];
-  assignee?: string;
-}
-
-interface CreateGithubBranchInput {
-  branchName: string;
-  fromBranch?: string;
-}
-
-interface CreateDraftPrInput {
-  title: string;
-  body: string;
-  headBranch: string;
-  baseBranch?: string;
-}
-
-interface UpdateTaskNotionInput {
-  taskId: string;
-  status?: Task["status"];
-  prUrl?: string;
-  workLog?: string;
-}
-
-// --- Tool executor ---
-
-async function executeTool(
-  toolName: string,
-  input: Record<string, unknown>
-): Promise<ToolResult> {
+async function executeTool(toolName: string, input: Record<string, unknown>): Promise<ToolResult> {
   switch (toolName) {
     case "get_backlog_tasks": {
       const args = input as unknown as GetBacklogTasksInput;
       return getTasks(args.status ? { status: args.status as Task["status"] } : undefined);
     }
-
     case "update_task_status": {
       const args = input as unknown as UpdateTaskStatusInput;
-      return updateTask(args.taskId, {
-        status: args.status,
-        ...(args.assignee !== undefined ? { assignee: args.assignee } : {}),
-      });
+      return updateTask(args.taskId, { status: args.status, ...(args.assignee ? { assignee: args.assignee } : {}) });
     }
-
     case "create_github_branch": {
       const args = input as unknown as CreateGithubBranchInput;
-      return createBranch({
-        branchName: args.branchName,
-        fromBranch: args.fromBranch,
-      });
+      return createBranch({ branchName: args.branchName, fromBranch: args.fromBranch });
     }
-
     case "create_draft_pr": {
       const args = input as unknown as CreateDraftPrInput;
-      return createPullRequest({
-        title: args.title,
-        body: args.body,
-        headBranch: args.headBranch,
-        baseBranch: args.baseBranch,
-        draft: true,
-      });
+      return createPullRequest({ title: args.title, body: args.body, headBranch: args.headBranch, baseBranch: args.baseBranch, draft: true });
     }
-
     case "update_task_notion": {
       const args = input as unknown as UpdateTaskNotionInput;
       return updateTask(args.taskId, {
-        ...(args.status !== undefined ? { status: args.status } : {}),
-        ...(args.prUrl !== undefined ? { prUrl: args.prUrl } : {}),
-        ...(args.workLog !== undefined ? { workLog: args.workLog } : {}),
+        ...(args.status ? { status: args.status } : {}),
+        ...(args.prUrl ? { prUrl: args.prUrl } : {}),
+        ...(args.workLog ? { workLog: args.workLog } : {}),
       });
     }
-
-    default:
-      return { success: false, error: "Unknown tool: " + toolName };
+    default: return { success: false, error: "Unknown tool: " + toolName };
   }
 }
 
-// --- Public interface ---
-
-export interface SeRunInput {
-  task?: Task;
-  taskId?: string;
-  release?: string;
-}
+export interface SeRunInput { task?: Task; taskId?: string; release?: string; }
 
 export interface SeRunResult {
   success: boolean;
@@ -202,19 +91,18 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
 
   const systemPrompt = [
     "You are a staff software engineer on an agile team.",
-    "Your job: claim a Backlog task, create a GitHub feature branch,",
-    "open a draft PR, and update Notion with the PR URL and work log.",
-    "Follow these steps:",
-    "1. If no task provided, call get_backlog_tasks with status=Backlog.",
-    "2. Call update_task_status: status=In Progress, assignee=SE Agent.",
-    "3. Derive branch name: feature/<8-char-taskId-no-dashes>-<slug-max-40>.",
-    "4. Call create_github_branch with that branch name.",
-    "5. Call create_draft_pr with conventional-commits title and markdown body.",
-    "6. Call update_task_notion: status=In Review, PR URL, and work log.",
-    "7. Respond with a final text summary.",
+    "Claim a Backlog task, create a feature branch, open a draft PR, update Notion.",
+    "Steps:",
+    "1. If no task, call get_backlog_tasks with status=Backlog.",
+    "2. update_task_status: status=In Progress, assignee=SE Agent.",
+    "3. Branch: feature/<8-char-taskId-no-dashes>-<slug-max-40>.",
+    "4. create_github_branch.",
+    "5. create_draft_pr: conventional-commits title, markdown body with task ID.",
+    "6. update_task_notion: In Review, PR URL, work log.",
+    "7. Final text summary.",
   ].join("\n");
 
-  const taskContext = input.task
+  const taskCtx = input.task
     ? [
         "A task has been assigned to you:",
         "",
@@ -224,13 +112,13 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
         "Priority: " + input.task.priority,
         "Release: " + input.task.release,
         "",
-        "Proceed with steps 2-7 (task already known, skip step 1).",
+        "Proceed with steps 2-7 (task known, skip step 1).",
       ].join("\n")
-    : "No task pre-assigned. Call get_backlog_tasks with status=Backlog.";
+    : "No task assigned. Call get_backlog_tasks with status=Backlog.";
 
-  const userMessage = taskContext + "\n\nComplete all steps then provide a final summary.";
+  const userMsg = taskCtx + "\n\n" + "Complete all steps then provide a final summary.";
 
-  const messages: Anthropic.MessageParam[] = [{ role: "user", content: userMessage }];
+  const messages: Anthropic.MessageParam[] = [{ role: "user", content: userMsg }];
 
   let iteration = 0;
   const maxIterations = 30;
@@ -250,7 +138,7 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
       messages,
     });
 
-    console.log("[SE Agent] Iteration " + String(iteration) + ": stop_reason=" + response.stop_reason);
+    console.log("[SE Agent] Iter " + String(iteration) + " stop_reason=" + response.stop_reason);
 
     const toolUseBlocks = response.content.filter(
       (block): block is Anthropic.ToolUseBlock => block.type === "tool_use"
@@ -269,19 +157,11 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
             const tasks = result.data as Task[];
             if (tasks.length > 0 && resolvedTask === undefined) resolvedTask = tasks[0];
           }
-          if (block.name === "create_github_branch") {
-            resolvedBranch = (result.data as { branch: string }).branch;
-          }
-          if (block.name === "create_draft_pr") {
-            resolvedPrUrl = (result.data as { url: string }).url;
-          }
+          if (block.name === "create_github_branch") resolvedBranch = (result.data as { branch: string }).branch;
+          if (block.name === "create_draft_pr") resolvedPrUrl = (result.data as { url: string }).url;
         }
 
-        toolResults.push({
-          type: "tool_result",
-          tool_use_id: block.id,
-          content: JSON.stringify(result),
-        });
+        toolResults.push({ type: "tool_result", tool_use_id: block.id, content: JSON.stringify(result) });
       }
 
       messages.push({ role: "user", content: toolResults });
@@ -292,20 +172,18 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
       const textBlock = response.content.find(
         (block): block is Anthropic.TextBlock => block.type === "text"
       );
-      if (textBlock) {
-        console.log("[SE Agent] Final summary: " + textBlock.text.slice(0, 200));
-      }
+      if (textBlock) console.log("[SE Agent] Summary: " + textBlock.text.slice(0, 200));
       break;
     }
 
     console.warn("[SE Agent] Unexpected stop_reason: " + response.stop_reason);
     break;
   }
-  if (iteration >= maxIterations) {
-    console.warn("[SE Agent] Reached max iterations. Stopping.");
-  }
 
-  console.log("[SE Agent] Complete. Branch: " + (resolvedBranch ?? "none") + " | PR: " + (resolvedPrUrl ?? "none"));
+  if (iteration >= maxIterations) console.warn("[SE Agent] Max iterations reached.");
+
+  console.log("[SE Agent] Complete.");
 
   return { success: true, task: resolvedTask, branchName: resolvedBranch, prUrl: resolvedPrUrl };
 }
+
