@@ -1,9 +1,9 @@
 {
-  "updatedAt": "2026-04-16T04:23:05.680Z",
+  "updatedAt": "2026-04-16T04:25:33.974Z",
   "agents": {
     "PM/PO": {
       "status": "completed",
-      "currentAction": "Created 25 tasks — 10 done, 5 in progress, 10 backlog",
+      "currentAction": "Created 25 tasks - 10 done, 5 in progress, 10 backlog",
       "iteration": 25,
       "inputTokens": 0,
       "outputTokens": 0,
@@ -18,7 +18,7 @@
     },
     "SE": {
       "status": "completed",
-      "currentAction": "Shipped 5 tasks with PRs — latest: Build Software Engineer agent with branch and PR a",
+      "currentAction": "Shipped 5 tasks with PRs - latest: Build Software Engineer agent with branch and PR a",
       "iteration": 15,
       "inputTokens": 0,
       "outputTokens": 0,
@@ -33,7 +33,7 @@
     },
     "QA": {
       "status": "completed",
-      "currentAction": "Reviewed 10 tasks — filed 5 bugs (1 open, 4 closed)",
+      "currentAction": "Reviewed 10 tasks - filed 5 bugs (1 open, 4 closed)",
       "iteration": 10,
       "inputTokens": 0,
       "outputTokens": 0,
@@ -43,14 +43,14 @@
       "durationMs": 0,
       "startedAt": "2026-04-15T16:20:00.000Z",
       "completedAt": "2026-04-15T16:20:00.000Z",
-      "taskTitle": "QA review — Release-2",
+      "taskTitle": "QA review - Release-2",
       "release": "Release-2"
     }
   },
   "history": [
     {
       "agent": "PM/PO",
-      "taskTitle": "Sprint planning — Release-2 (12 tasks)",
+      "taskTitle": "Sprint planning - Release-2 (12 tasks)",
       "status": "completed",
       "totalTokens": 0,
       "costUsd": 0,
@@ -59,7 +59,7 @@
     },
     {
       "agent": "SE",
-      "taskTitle": "Implemented 0 tasks — Release-2",
+      "taskTitle": "Implemented 0 tasks - Release-2",
       "status": "completed",
       "totalTokens": 0,
       "costUsd": 0,
@@ -68,7 +68,7 @@
     },
     {
       "agent": "QA",
-      "taskTitle": "QA review — Release-2 (Planning)",
+      "taskTitle": "QA review - Release-2 (Planning)",
       "status": "completed",
       "totalTokens": 0,
       "costUsd": 0,
@@ -77,7 +77,7 @@
     },
     {
       "agent": "PM/PO",
-      "taskTitle": "Sprint planning — Release-1 (13 tasks)",
+      "taskTitle": "Sprint planning - Release-1 (13 tasks)",
       "status": "completed",
       "totalTokens": 0,
       "costUsd": 0,
@@ -86,7 +86,7 @@
     },
     {
       "agent": "SE",
-      "taskTitle": "Implemented 10 tasks — Release-1",
+      "taskTitle": "Implemented 10 tasks - Release-1",
       "status": "completed",
       "totalTokens": 0,
       "costUsd": 0,
@@ -95,7 +95,7 @@
     },
     {
       "agent": "QA",
-      "taskTitle": "QA review — Release-1 (Done)",
+      "taskTitle": "QA review - Release-1 (Done)",
       "status": "completed",
       "totalTokens": 0,
       "costUsd": 0,
