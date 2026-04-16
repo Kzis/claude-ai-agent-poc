@@ -11,7 +11,8 @@
     "orchestrate": "ts-node src/orchestrator.ts",
     "setup-notion": "ts-node src/setup-notion.ts",
     "dashboard": "ts-node src/cli/dashboard.ts",
-    "sync-dashboard": "ts-node src/cli/sync-dashboard.ts"
+    "sync-dashboard": "ts-node src/cli/sync-dashboard.ts",
+    "setup-metrics-db": "ts-node src/setup-metrics-db.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
