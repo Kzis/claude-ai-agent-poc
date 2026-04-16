@@ -1,106 +1,142 @@
 {
-  "updatedAt": "2026-04-16T04:26:02.554Z",
+  "updatedAt": "2026-04-16T04:30:54.438Z",
   "agents": {
     "PM/PO": {
       "status": "completed",
-      "currentAction": "Created 25 tasks - 10 done, 5 in progress, 10 backlog",
-      "iteration": 25,
-      "inputTokens": 0,
-      "outputTokens": 0,
+      "currentAction": "Last run: Sprint planning - Release-2 (10 tasks)",
+      "iteration": 0,
+      "inputTokens": 24600,
+      "outputTokens": 6200,
       "thinkingTokens": 0,
-      "totalTokens": 0,
-      "costUsd": 0,
-      "durationMs": 0,
-      "startedAt": "2026-04-14T16:24:00.000Z",
-      "completedAt": "2026-04-14T16:24:00.000Z",
-      "taskTitle": "Release-2",
+      "totalTokens": 30800,
+      "costUsd": 0.1668,
+      "durationMs": 84000,
+      "startedAt": "2026-04-15T16:10:00.000Z",
+      "completedAt": "2026-04-15T16:10:00.000Z",
+      "taskTitle": "Sprint planning - Release-2 (10 tasks)",
       "release": "Release-2"
     },
     "SE": {
       "status": "completed",
-      "currentAction": "Shipped 5 tasks with PRs - latest: Build Software Engineer agent with branch and PR a",
-      "iteration": 15,
-      "inputTokens": 0,
-      "outputTokens": 0,
+      "currentAction": "Last run: Instrument PM/PO agent with metrics emission",
+      "iteration": 0,
+      "inputTokens": 42600,
+      "outputTokens": 10800,
       "thinkingTokens": 0,
-      "totalTokens": 0,
-      "costUsd": 0,
-      "durationMs": 0,
-      "startedAt": "2026-04-15T16:20:00.000Z",
-      "completedAt": "2026-04-15T16:20:00.000Z",
-      "taskTitle": "Build Software Engineer agent with branch and PR automation",
-      "release": "Release-1"
+      "totalTokens": 53400,
+      "costUsd": 0.2898,
+      "durationMs": 142000,
+      "startedAt": "2026-04-15T19:00:00.000Z",
+      "completedAt": "2026-04-15T19:00:00.000Z",
+      "taskTitle": "Instrument PM/PO agent with metrics emission",
+      "release": "Release-2"
     },
     "QA": {
       "status": "completed",
-      "currentAction": "Reviewed 10 tasks - filed 5 bugs (1 open, 4 closed)",
-      "iteration": 10,
-      "inputTokens": 0,
-      "outputTokens": 0,
+      "currentAction": "Last run: QA review - Release-1 (5 tasks, 5 bugs filed)",
+      "iteration": 0,
+      "inputTokens": 28800,
+      "outputTokens": 7200,
       "thinkingTokens": 0,
-      "totalTokens": 0,
-      "costUsd": 0,
-      "durationMs": 0,
-      "startedAt": "2026-04-15T16:20:00.000Z",
-      "completedAt": "2026-04-15T16:20:00.000Z",
-      "taskTitle": "QA review - Release-2",
-      "release": "Release-2"
+      "totalTokens": 36000,
+      "costUsd": 0.19440000000000002,
+      "durationMs": 92000,
+      "startedAt": "2026-04-15T08:00:00.000Z",
+      "completedAt": "2026-04-15T08:00:00.000Z",
+      "taskTitle": "QA review - Release-1 (5 tasks, 5 bugs filed)",
+      "release": "Release-1"
     }
   },
   "history": [
     {
-      "agent": "PM/PO",
-      "taskTitle": "Sprint planning - Release-2 (12 tasks)",
+      "agent": "SE",
+      "taskTitle": "Instrument PM/PO agent with metrics emission",
       "status": "completed",
-      "totalTokens": 0,
-      "costUsd": 0,
-      "durationMs": 0,
-      "completedAt": "2026-04-15T16:16:00.000Z"
+      "totalTokens": 53400,
+      "costUsd": 0.2898,
+      "durationMs": 142000,
+      "completedAt": "2026-04-15T19:00:00.000Z"
     },
     {
       "agent": "SE",
-      "taskTitle": "Implemented 0 tasks - Release-2",
+      "taskTitle": "Design shared AgentMetrics TypeScript type",
       "status": "completed",
-      "totalTokens": 0,
-      "costUsd": 0,
-      "durationMs": 0,
-      "completedAt": "2026-04-15T16:16:00.000Z"
-    },
-    {
-      "agent": "QA",
-      "taskTitle": "QA review - Release-2 (Planning)",
-      "status": "completed",
-      "totalTokens": 0,
-      "costUsd": 0,
-      "durationMs": 0,
-      "completedAt": "2026-04-15T16:16:00.000Z"
+      "totalTokens": 39200,
+      "costUsd": 0.2112,
+      "durationMs": 88000,
+      "completedAt": "2026-04-15T17:30:00.000Z"
     },
     {
       "agent": "PM/PO",
-      "taskTitle": "Sprint planning - Release-1 (13 tasks)",
+      "taskTitle": "Sprint planning - Release-2 (10 tasks)",
       "status": "completed",
-      "totalTokens": 0,
-      "costUsd": 0,
-      "durationMs": 0,
-      "completedAt": "2026-04-14T16:23:00.000Z"
-    },
-    {
-      "agent": "SE",
-      "taskTitle": "Implemented 10 tasks - Release-1",
-      "status": "completed",
-      "totalTokens": 0,
-      "costUsd": 0,
-      "durationMs": 0,
-      "completedAt": "2026-04-14T16:23:00.000Z"
+      "totalTokens": 30800,
+      "costUsd": 0.1668,
+      "durationMs": 84000,
+      "completedAt": "2026-04-15T16:10:00.000Z"
     },
     {
       "agent": "QA",
-      "taskTitle": "QA review - Release-1 (Done)",
+      "taskTitle": "QA review - Release-1 (5 tasks, 5 bugs filed)",
       "status": "completed",
-      "totalTokens": 0,
-      "costUsd": 0,
-      "durationMs": 0,
-      "completedAt": "2026-04-14T16:23:00.000Z"
+      "totalTokens": 36000,
+      "costUsd": 0.19440000000000002,
+      "durationMs": 92000,
+      "completedAt": "2026-04-15T08:00:00.000Z"
+    },
+    {
+      "agent": "SE",
+      "taskTitle": "Build orchestrator that coordinates all three agents",
+      "status": "completed",
+      "totalTokens": 44600,
+      "costUsd": 0.2346,
+      "durationMs": 98000,
+      "completedAt": "2026-04-14T23:20:00.000Z"
+    },
+    {
+      "agent": "SE",
+      "taskTitle": "Build QA agent with bug filing and release report generation",
+      "status": "completed",
+      "totalTokens": 49200,
+      "costUsd": 0.2652,
+      "durationMs": 121000,
+      "completedAt": "2026-04-14T22:00:00.000Z"
+    },
+    {
+      "agent": "SE",
+      "taskTitle": "Build Software Engineer agent with branch and PR automation",
+      "status": "completed",
+      "totalTokens": 56400,
+      "costUsd": 0.3084,
+      "durationMs": 158000,
+      "completedAt": "2026-04-14T20:10:00.000Z"
+    },
+    {
+      "agent": "SE",
+      "taskTitle": "Build PM/PO agent with backlog creation and prioritization",
+      "status": "completed",
+      "totalTokens": 51600,
+      "costUsd": 0.2796,
+      "durationMs": 134000,
+      "completedAt": "2026-04-14T18:30:00.000Z"
+    },
+    {
+      "agent": "SE",
+      "taskTitle": "Implement Notion tool layer (CRUD for tasks, bugs, releases)",
+      "status": "completed",
+      "totalTokens": 47800,
+      "costUsd": 0.2538,
+      "durationMs": 112000,
+      "completedAt": "2026-04-14T17:05:00.000Z"
+    },
+    {
+      "agent": "PM/PO",
+      "taskTitle": "Sprint planning - Release-1 (10 tasks)",
+      "status": "completed",
+      "totalTokens": 28200,
+      "costUsd": 0.1542,
+      "durationMs": 78000,
+      "completedAt": "2026-04-14T16:22:00.000Z"
     }
   ]
 }
