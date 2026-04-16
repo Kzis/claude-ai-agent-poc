@@ -100,13 +100,13 @@ export interface AgentMetrics {
 }
 
 /**
- * Calculate the cost in USD for a Claude claude-opus-4-6 invocation.
- * Pricing: $15/M input tokens, $75/M output tokens, $75/M thinking tokens.
+ * Calculate the cost in USD for a Claude claude-sonnet-4-6 invocation.
+ * Pricing: $3/M input tokens, $15/M output tokens.
  */
 export function calculateCost(
   inputTokens: number,
   outputTokens: number,
   thinkingTokens: number
 ): number {
-  return (inputTokens * 0.000015) + ((outputTokens + thinkingTokens) * 0.000075);
+  return (inputTokens * 0.000003) + ((outputTokens + thinkingTokens) * 0.000015);
 }

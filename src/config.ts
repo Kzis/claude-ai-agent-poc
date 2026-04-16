@@ -13,7 +13,7 @@ function optional(key: string, fallback = ""): string {
 export const config = {
   anthropic: {
     apiKey: required("ANTHROPIC_API_KEY"),
-    model: "claude-opus-4-6" as const,
+    model: "claude-sonnet-4-6" as const,
   },
   notion: {
     apiKey: required("NOTION_API_KEY"),

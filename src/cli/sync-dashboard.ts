@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 /**
- * sync-dashboard — pulls real data from all Notion databases and pushes
+ * sync-dashboard - pulls real data from all Notion databases and pushes
  * docs/live.json to GitHub so the investor dashboard shows actual activity.
  *
  * Priority:
@@ -71,7 +71,7 @@ function deriveFromNotion(
       ...blank(),
       status: tasks.length > 0 ? "completed" : "idle",
       currentAction: tasks.length > 0
-        ? `Created ${tasks.length} tasks — ${done.length} done, ${inProgress.length} in progress, ${backlog.length} backlog`
+        ? `Created ${tasks.length} tasks - ${done.length} done, ${inProgress.length} in progress, ${backlog.length} backlog`
         : "No tasks yet",
       taskTitle: latestRelease?.name ?? "",
       release: releaseName,
@@ -83,7 +83,7 @@ function deriveFromNotion(
       ...blank(),
       status: done.length > 0 ? "completed" : inProgress.length > 0 ? "running" : "idle",
       currentAction: withPR.length > 0
-        ? `Shipped ${withPR.length} task${withPR.length !== 1 ? "s" : ""} with PRs — latest: ${(newestDone?.title ?? "").slice(0, 50)}`
+        ? `Shipped ${withPR.length} task${withPR.length !== 1 ? "s" : ""} with PRs - latest: ${(newestDone?.title ?? "").slice(0, 50)}`
         : done.length > 0
         ? `Completed ${done.length} task${done.length !== 1 ? "s" : ""}`
         : inProgress.length > 0
@@ -99,12 +99,12 @@ function deriveFromNotion(
       ...blank(),
       status: bugs.length > 0 || done.length > 0 ? "completed" : "idle",
       currentAction: bugs.length > 0
-        ? `Reviewed ${done.length} task${done.length !== 1 ? "s" : ""} — filed ${bugs.length} bug${bugs.length !== 1 ? "s" : ""} (${openBugs.length} open, ${closedBugs.length} closed)`
+        ? `Reviewed ${done.length} task${done.length !== 1 ? "s" : ""} - filed ${bugs.length} bug${bugs.length !== 1 ? "s" : ""} (${openBugs.length} open, ${closedBugs.length} closed)`
         : done.length > 0
-        ? `Reviewed ${done.length} task${done.length !== 1 ? "s" : ""} — no bugs filed`
+        ? `Reviewed ${done.length} task${done.length !== 1 ? "s" : ""} - no bugs filed`
         : "No tasks reviewed yet",
       taskTitle: latestRelease?.name
-        ? `QA review — ${latestRelease.name}`
+        ? `QA review - ${latestRelease.name}`
         : "QA review",
       release: releaseName,
       startedAt:   newestDone?.updatedAt ?? null,
@@ -120,9 +120,9 @@ function deriveFromNotion(
       const relTasks = tasks.filter(t => t.release === r.name);
       const relDone  = relTasks.filter(t => t.status === "Done").length;
       return [
-        { agent: "PM/PO" as AgentName, taskTitle: `Sprint planning — ${r.name} (${relTasks.length} tasks)`, status: "completed" as const, totalTokens: 0, costUsd: 0, durationMs: 0, completedAt: r.createdAt },
-        { agent: "SE"    as AgentName, taskTitle: `Implemented ${relDone} task${relDone !== 1 ? "s" : ""} — ${r.name}`, status: "completed" as const, totalTokens: 0, costUsd: 0, durationMs: 0, completedAt: r.createdAt },
-        { agent: "QA"    as AgentName, taskTitle: `QA review — ${r.name} (${r.status})`, status: r.status === "Released" || r.status === "In Progress" ? "completed" as const : "completed" as const, totalTokens: 0, costUsd: 0, durationMs: 0, completedAt: r.createdAt },
+        { agent: "PM/PO" as AgentName, taskTitle: `Sprint planning - ${r.name} (${relTasks.length} tasks)`, status: "completed" as const, totalTokens: 0, costUsd: 0, durationMs: 0, completedAt: r.createdAt },
+        { agent: "SE"    as AgentName, taskTitle: `Implemented ${relDone} task${relDone !== 1 ? "s" : ""} - ${r.name}`, status: "completed" as const, totalTokens: 0, costUsd: 0, durationMs: 0, completedAt: r.createdAt },
+        { agent: "QA"    as AgentName, taskTitle: `QA review - ${r.name} (${r.status})`, status: r.status === "Released" || r.status === "In Progress" ? "completed" as const : "completed" as const, totalTokens: 0, costUsd: 0, durationMs: 0, completedAt: r.createdAt },
       ];
     });
 
@@ -189,7 +189,7 @@ async function main() {
 
   } else {
     // ── Derive from backlog / bugs / releases ─────────────────────────────────
-    console.log("   Metrics DB empty — deriving stats from backlog data.");
+    console.log("   Metrics DB empty - deriving stats from backlog data.");
     ({ agents, history } = deriveFromNotion(tasks, bugs, releases));
   }
 
