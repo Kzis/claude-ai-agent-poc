@@ -75,3 +75,38 @@ export interface PullRequest {
   branch: string;
   state: "open" | "closed" | "merged";
 }
+
+// ─── Agent Metrics ────────────────────────────────────────────────────────────
+
+export type AgentName = "PM/PO" | "SE" | "QA";
+export type MetricStatus = "started" | "completed" | "failed";
+
+export interface AgentMetrics {
+  id?: string;            // Notion page ID (set after write)
+  agentName: AgentName;
+  taskId: string;
+  taskTitle: string;
+  status: MetricStatus;
+  model: string;          // e.g. "claude-opus-4-6"
+  inputTokens: number;
+  outputTokens: number;
+  thinkingTokens: number;
+  totalTokens: number;
+  costUsd: number;        // calculated: (inputTokens * 0.000015) + ((outputTokens + thinkingTokens) * 0.000075)
+  durationMs: number;
+  releaseId: string;      // e.g. "Release-2"
+  timestamp: string;      // ISO 8601
+  notes?: string;         // optional thinking summary or work log
+}
+
+/**
+ * Calculate the cost in USD for a Claude claude-opus-4-6 invocation.
+ * Pricing: $15/M input tokens, $75/M output tokens, $75/M thinking tokens.
+ */
+export function calculateCost(
+  inputTokens: number,
+  outputTokens: number,
+  thinkingTokens: number
+): number {
+  return (inputTokens * 0.000015) + ((outputTokens + thinkingTokens) * 0.000075);
+}
