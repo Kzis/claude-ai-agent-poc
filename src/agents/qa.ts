@@ -16,6 +16,8 @@ import * as path from "path";
 import { config } from "../config";
 import { getTasks, updateTask, createBugReport } from "../tools/notion";
 import type { Task, BugReport, BugSeverity, ToolResult } from "../tools/types";
+import { calculateCost } from "../tools/types";
+import { updateAgentStatus, makeStartPatch } from "../tools/live-status";
 
 // I/O types
 
@@ -309,6 +311,11 @@ export async function run(input: QaRunInput): Promise<QaRunResult> {
   let totalOutputTokens = 0;
   let totalThinkingTokens = 0;
 
+  void updateAgentStatus("QA", {
+    ...makeStartPatch(release ?? "Release-2"),
+    taskTitle: release ? "QA review — " + release : "QA review",
+  });
+
   const systemPrompt = [
     "You are a senior QA engineer on an agile software team.",
     "Your job: review In Review tasks, run tests, file bugs, approve/reject tasks,",
@@ -365,12 +372,32 @@ export async function run(input: QaRunInput): Promise<QaRunResult> {
     if (response.stop_reason === "tool_use" && toolUseBlocks.length > 0) {
       messages.push({ role: "assistant", content: response.content });
       const toolResults: Anthropic.ToolResultBlockParam[] = [];
+      let lastAction = "";
       for (const block of toolUseBlocks) {
         console.log("[QA Agent]   -> tool: " + block.name);
         const result = await executeTool(block.name, block.input as Record<string, unknown>, state, release);
+        if (block.name === "get_in_review_tasks") lastAction = "Fetching tasks in review…";
+        if (block.name === "run_tests") lastAction = "Running tests on: " + ((block.input as Record<string, string>).taskTitle ?? "task");
+        if (block.name === "file_bug_report") lastAction = "Filing bug: " + ((block.input as Record<string, string>).title ?? "");
+        if (block.name === "approve_task") lastAction = "✅ Approved task";
+        if (block.name === "reject_task") lastAction = "❌ Rejected task";
+        if (block.name === "generate_qa_report") lastAction = "Generating QA report…";
         toolResults.push({ type: "tool_result", tool_use_id: block.id, content: JSON.stringify(result) });
       }
       messages.push({ role: "user", content: toolResults });
+      void updateAgentStatus("QA", {
+        status: "running",
+        currentAction: lastAction || "Thinking…",
+        iteration,
+        inputTokens: totalInputTokens,
+        outputTokens: totalOutputTokens,
+        thinkingTokens: totalThinkingTokens,
+        totalTokens: totalInputTokens + totalOutputTokens + totalThinkingTokens,
+        costUsd: calculateCost(totalInputTokens, totalOutputTokens, totalThinkingTokens),
+        durationMs: Date.now() - startTime,
+        taskTitle: release ? "QA review — " + release : "QA review",
+        release: release ?? "Release-2",
+      });
       continue;
     }
 
@@ -400,6 +427,21 @@ export async function run(input: QaRunInput): Promise<QaRunResult> {
   };
 
   console.log("[QA Agent] Complete.");
+
+  void updateAgentStatus("QA", {
+    status: report.recommendation === "GO" ? "completed" : "failed",
+    currentAction: report.recommendation === "GO" ? "✅ GO — all tasks passed" : "❌ NO-GO — bugs found",
+    iteration,
+    inputTokens: totalInputTokens,
+    outputTokens: totalOutputTokens,
+    thinkingTokens: totalThinkingTokens,
+    totalTokens: totalInputTokens + totalOutputTokens + totalThinkingTokens,
+    costUsd: calculateCost(totalInputTokens, totalOutputTokens, totalThinkingTokens),
+    durationMs: Date.now() - startTime,
+    completedAt: new Date().toISOString(),
+    taskTitle: release ? "QA review — " + release : "QA review",
+    release: release ?? "Release-2",
+  });
 
   // Emit metrics (metrics.ts may not exist yet -- wrapped in try/catch)
   try {

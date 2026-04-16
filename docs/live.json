@@ -1,0 +1,51 @@
+{
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "agents": {
+    "PM/PO": {
+      "status": "idle",
+      "currentAction": "",
+      "iteration": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "thinkingTokens": 0,
+      "totalTokens": 0,
+      "costUsd": 0,
+      "durationMs": 0,
+      "startedAt": null,
+      "completedAt": null,
+      "taskTitle": "",
+      "release": ""
+    },
+    "SE": {
+      "status": "idle",
+      "currentAction": "",
+      "iteration": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "thinkingTokens": 0,
+      "totalTokens": 0,
+      "costUsd": 0,
+      "durationMs": 0,
+      "startedAt": null,
+      "completedAt": null,
+      "taskTitle": "",
+      "release": ""
+    },
+    "QA": {
+      "status": "idle",
+      "currentAction": "",
+      "iteration": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "thinkingTokens": 0,
+      "totalTokens": 0,
+      "costUsd": 0,
+      "durationMs": 0,
+      "startedAt": null,
+      "completedAt": null,
+      "taskTitle": "",
+      "release": ""
+    }
+  },
+  "history": []
+}

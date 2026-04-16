@@ -11,6 +11,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { config } from "../config";
 import { createTask, getTasks } from "../tools/notion";
 import type { Task, TaskPriority, TaskType, ToolResult } from "../tools/types";
+import { calculateCost } from "../tools/types";
+import { updateAgentStatus, makeStartPatch } from "../tools/live-status";
 
 const client = new Anthropic({ apiKey: config.anthropic.apiKey });
 const tools: Anthropic.Tool[] = [
@@ -131,6 +133,7 @@ export async function run(input: PmRunInput): Promise<PmRunResult> {
   let totalThinkingTokens = 0;
 
   console.log("[PM Agent] Starting for release " + release);
+  void updateAgentStatus("PM/PO", { ...makeStartPatch(release), taskTitle: idea.slice(0, 80) });
 
   const systemPrompt =
     "You are a senior PM/PO on an agile software team. " +
@@ -190,6 +193,7 @@ export async function run(input: PmRunInput): Promise<PmRunResult> {
     if (response.stop_reason === "tool_use" && toolUseBlocks.length > 0) {
       messages.push({ role: "assistant", content: response.content });
       const toolResults: Anthropic.ToolResultBlockParam[] = [];
+      let lastAction = "";
       for (const block of toolUseBlocks) {
         console.log("[PM Agent]   -> tool: " + block.name);
         const result = await executeTool(
@@ -199,6 +203,9 @@ export async function run(input: PmRunInput): Promise<PmRunResult> {
         );
         if (block.name === "create_backlog_task" && result.success && result.data) {
           tasksCreated.push(result.data as Task);
+          lastAction = "Creating task: " + (block.input as Record<string, string>).title;
+        } else if (block.name === "get_existing_tasks") {
+          lastAction = "Reading existing backlog…";
         }
         toolResults.push({
           type: "tool_result",
@@ -207,6 +214,19 @@ export async function run(input: PmRunInput): Promise<PmRunResult> {
         });
       }
       messages.push({ role: "user", content: toolResults });
+      void updateAgentStatus("PM/PO", {
+        status: "running",
+        currentAction: lastAction || "Thinking…",
+        iteration,
+        inputTokens: totalInputTokens,
+        outputTokens: totalOutputTokens,
+        thinkingTokens: totalThinkingTokens,
+        totalTokens: totalInputTokens + totalOutputTokens + totalThinkingTokens,
+        costUsd: calculateCost(totalInputTokens, totalOutputTokens, totalThinkingTokens),
+        durationMs: Date.now() - startTime,
+        taskTitle: tasksCreated[0]?.title ?? idea.slice(0, 80),
+        release,
+      });
       continue;
     }
 
@@ -232,6 +252,22 @@ export async function run(input: PmRunInput): Promise<PmRunResult> {
     "[PM Agent] Complete. Created " + String(tasksCreated.length) + " task(s), " +
       String(criticalCount.value) + " Critical."
   );
+
+  // Mark agent complete on live dashboard
+  void updateAgentStatus("PM/PO", {
+    status: "completed",
+    currentAction: "Done — created " + String(tasksCreated.length) + " task(s)",
+    iteration,
+    inputTokens: totalInputTokens,
+    outputTokens: totalOutputTokens,
+    thinkingTokens: totalThinkingTokens,
+    totalTokens: totalInputTokens + totalOutputTokens + totalThinkingTokens,
+    costUsd: calculateCost(totalInputTokens, totalOutputTokens, totalThinkingTokens),
+    durationMs: Date.now() - startTime,
+    completedAt: new Date().toISOString(),
+    taskTitle: tasksCreated[0]?.title ?? idea.slice(0, 80),
+    release,
+  });
 
   // Emit metrics (metrics.ts may not exist yet -- wrapped in try/catch)
   try {

@@ -9,6 +9,8 @@ import { config } from "../config";
 import { getTasks, updateTask } from "../tools/notion";
 import { createBranch, createPullRequest } from "../tools/github";
 import type { Task, ToolResult } from "../tools/types";
+import { calculateCost } from "../tools/types";
+import { updateAgentStatus, makeStartPatch } from "../tools/live-status";
 
 const client = new Anthropic({ apiKey: config.anthropic.apiKey });
 
@@ -132,6 +134,11 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
   let totalOutputTokens = 0;
   let totalThinkingTokens = 0;
 
+  void updateAgentStatus("SE", {
+    ...makeStartPatch(input.release ?? "Release-2"),
+    taskTitle: input.task?.title ?? "Fetching task…",
+  });
+
   while (iteration < maxIterations) {
     iteration++;
 
@@ -161,6 +168,7 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
       messages.push({ role: "assistant", content: response.content });
 
       const toolResults: Anthropic.ToolResultBlockParam[] = [];
+      let lastAction = "";
       for (const block of toolUseBlocks) {
         console.log("[SE Agent]   -> tool: " + block.name);
         const result = await executeTool(block.name, block.input as Record<string, unknown>);
@@ -169,15 +177,38 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
           if (block.name === "get_backlog_tasks") {
             const tasks = result.data as Task[];
             if (tasks.length > 0 && resolvedTask === undefined) resolvedTask = tasks[0];
+            lastAction = "Reading backlog tasks…";
           }
-          if (block.name === "create_github_branch") resolvedBranch = (result.data as { branch: string }).branch;
-          if (block.name === "create_draft_pr") resolvedPrUrl = (result.data as { url: string }).url;
+          if (block.name === "create_github_branch") {
+            resolvedBranch = (result.data as { branch: string }).branch;
+            lastAction = "Creating branch: " + resolvedBranch;
+          }
+          if (block.name === "create_draft_pr") {
+            resolvedPrUrl = (result.data as { url: string }).url;
+            lastAction = "Opened draft PR";
+          }
+          if (block.name === "update_task_status") lastAction = "Updating task status…";
+          if (block.name === "log_work") lastAction = "Logging work to Notion…";
+          if (block.name === "await_human_pr_approval") lastAction = "⏳ Waiting for human PR approval";
         }
 
         toolResults.push({ type: "tool_result", tool_use_id: block.id, content: JSON.stringify(result) });
       }
 
       messages.push({ role: "user", content: toolResults });
+      void updateAgentStatus("SE", {
+        status: "running",
+        currentAction: lastAction || "Thinking…",
+        iteration,
+        inputTokens: totalInputTokens,
+        outputTokens: totalOutputTokens,
+        thinkingTokens: totalThinkingTokens,
+        totalTokens: totalInputTokens + totalOutputTokens + totalThinkingTokens,
+        costUsd: calculateCost(totalInputTokens, totalOutputTokens, totalThinkingTokens),
+        durationMs: Date.now() - startTime,
+        taskTitle: resolvedTask?.title ?? "Fetching task…",
+        release: input.release ?? "Release-2",
+      });
       continue;
     }
 
@@ -196,6 +227,21 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
   if (iteration >= maxIterations) console.warn("[SE Agent] Max iterations reached.");
 
   console.log("[SE Agent] Complete.");
+
+  void updateAgentStatus("SE", {
+    status: "completed",
+    currentAction: resolvedPrUrl ? "PR opened: " + resolvedPrUrl : "Done",
+    iteration,
+    inputTokens: totalInputTokens,
+    outputTokens: totalOutputTokens,
+    thinkingTokens: totalThinkingTokens,
+    totalTokens: totalInputTokens + totalOutputTokens + totalThinkingTokens,
+    costUsd: calculateCost(totalInputTokens, totalOutputTokens, totalThinkingTokens),
+    durationMs: Date.now() - startTime,
+    completedAt: new Date().toISOString(),
+    taskTitle: resolvedTask?.title ?? "",
+    release: input.release ?? "Release-2",
+  });
 
   // Emit metrics (metrics.ts may not exist yet -- wrapped in try/catch)
   try {
