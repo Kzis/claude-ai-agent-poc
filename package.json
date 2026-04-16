@@ -10,7 +10,8 @@
     "qa": "ts-node src/agents/qa.ts",
     "orchestrate": "ts-node src/orchestrator.ts",
     "setup-notion": "ts-node src/setup-notion.ts",
-    "dashboard": "ts-node src/cli/dashboard.ts"
+    "dashboard": "ts-node src/cli/dashboard.ts",
+    "sync-dashboard": "ts-node src/cli/sync-dashboard.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
