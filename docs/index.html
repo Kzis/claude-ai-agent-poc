@@ -139,10 +139,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
 </main>
 
 <script>
-var OWNER="Kzis",REPO="claude-ai-agent-poc",FILE="docs/live.json";
-var API="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/"+FILE;
-var INTERVAL=8000;
-var lastEtag="";
+var RAW="https://raw.githubusercontent.com/Kzis/claude-ai-agent-poc/main/docs/live.json";
+var INTERVAL=30000;
 
 function fmtT(n){if(!n||n===0)return"&#8212;";if(n>=1e6)return(n/1e6).toFixed(2)+"M";if(n>=1e3)return(n/1e3).toFixed(1)+"K";return String(n);}
 function fmtC(u){if(!u||u===0)return"&#8212;";if(u<0.0001)return"<$0.0001";return"$"+u.toFixed(4);}
@@ -234,10 +232,10 @@ function render(data){
   var totTok=vals.reduce(function(s,a){return s+(a.totalTokens||0);},0);
   var totCost=vals.reduce(function(s,a){return s+(a.costUsd||0);},0);
   var active=vals.filter(function(a){return a.status==="running";}).length;
-  document.getElementById("kpi-tokens").textContent=fmtT(totTok);
-  document.getElementById("kpi-cost").textContent=fmtC(totCost);
-  document.getElementById("kpi-active").textContent=String(active);
-  document.getElementById("kpi-runs").textContent=String(hist.length);
+  document.getElementById("kpi-tokens").innerHTML=fmtT(totTok);
+  document.getElementById("kpi-cost").innerHTML=fmtC(totCost);
+  document.getElementById("kpi-active").innerHTML=String(active);
+  document.getElementById("kpi-runs").innerHTML=String(hist.length);
   document.getElementById("agents-row").innerHTML=["PM/PO","SE","QA"].map(function(n){return renderCard(n,ag[n]||{});}).join("");
   document.getElementById("history-panel").innerHTML=renderHistory(hist);
   document.getElementById("summary-panel").innerHTML=renderSummary(data);
@@ -246,17 +244,9 @@ function render(data){
 
 async function fetchData(){
   try{
-    var headers={"Accept":"application/vnd.github.v3+json"};
-    if(lastEtag)headers["If-None-Match"]=lastEtag;
-    var res=await fetch(API,{headers:headers,cache:"no-store"});
-    if(res.status===304)return;
-    var etag=res.headers.get("ETag");
-    if(etag)lastEtag=etag;
-    if(!res.ok)throw new Error("GitHub API "+res.status);
-    var json=await res.json();
-    var b64=json.content.replace(/\n/g,"");
-    var bytes=Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0);});
-    var data=JSON.parse(new TextDecoder("utf-8").decode(bytes));
+    var res=await fetch(RAW+"?t="+Date.now(),{cache:"no-store"});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    var data=await res.json();
     render(data);
   }catch(err){
     document.getElementById("last-updated").textContent="Error: "+err.message;
