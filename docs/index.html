@@ -1,611 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Claude AI Agent Team — Autonomous Dev Pipeline</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0a0b0f;
-      --surface: #111318;
-      --surface2: #181c25;
-      --border: #1e2330;
-      --accent: #7c6af7;
-      --accent2: #5eead4;
-      --accent3: #f472b6;
-      --text: #e2e8f0;
-      --muted: #64748b;
-      --green: #4ade80;
-      --yellow: #fbbf24;
-      --red: #f87171;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
-    /* ── NAV ── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 1rem 2.5rem;
-      background: rgba(10, 11, 15, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav-logo { display: flex; align-items: center; gap: .6rem; font-weight: 700; font-size: 1.05rem; }
-    .nav-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
-    .nav-links { display: flex; gap: 2rem; }
-    .nav-links a { color: var(--muted); text-decoration: none; font-size: .9rem; transition: color .2s; }
-    .nav-links a:hover { color: var(--text); }
-    .nav-cta {
-      background: var(--accent); color: #fff; padding: .45rem 1.1rem; border-radius: 6px;
-      text-decoration: none; font-size: .85rem; font-weight: 600; transition: opacity .2s;
-    }
-    .nav-cta:hover { opacity: .85; }
-
-    /* ── HERO ── */
-    .hero {
-      min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; padding: 8rem 2rem 4rem;
-      position: relative; overflow: hidden;
-    }
-    .hero-bg {
-      position: absolute; inset: 0; z-index: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124,106,247,.18) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(94,234,212,.1) 0%, transparent 60%);
-    }
-    .hero-grid {
-      position: absolute; inset: 0; z-index: 0;
-      background-image: linear-gradient(var(--border) 1px, transparent 1px),
-                        linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 60px 60px;
-      opacity: .35;
-      mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 30%, transparent 100%);
-    }
-    .hero > * { position: relative; z-index: 1; }
-    .badge {
-      display: inline-flex; align-items: center; gap: .4rem;
-      background: rgba(124,106,247,.15); border: 1px solid rgba(124,106,247,.35);
-      color: #a89cf7; padding: .3rem .85rem; border-radius: 99px; font-size: .8rem; font-weight: 500;
-      margin-bottom: 1.5rem;
-      animation: fadeUp .6s ease both;
-    }
-    .hero h1 {
-      font-size: clamp(2.4rem, 6vw, 4.2rem); font-weight: 800; line-height: 1.1;
-      letter-spacing: -.03em; max-width: 820px;
-      animation: fadeUp .6s .1s ease both;
-    }
-    .hero h1 span { color: var(--accent); }
-    .hero p {
-      font-size: 1.15rem; color: var(--muted); max-width: 560px; margin: 1.5rem auto 0;
-      animation: fadeUp .6s .2s ease both;
-    }
-    .hero-actions {
-      display: flex; gap: 1rem; margin-top: 2.5rem; justify-content: center; flex-wrap: wrap;
-      animation: fadeUp .6s .3s ease both;
-    }
-    .btn-primary {
-      background: var(--accent); color: #fff; padding: .75rem 1.75rem; border-radius: 8px;
-      text-decoration: none; font-weight: 600; font-size: .95rem; transition: all .2s;
-      box-shadow: 0 0 30px rgba(124,106,247,.35);
-    }
-    .btn-primary:hover { opacity: .9; transform: translateY(-1px); }
-    .btn-outline {
-      background: transparent; color: var(--text); padding: .75rem 1.75rem; border-radius: 8px;
-      text-decoration: none; font-weight: 500; font-size: .95rem;
-      border: 1px solid var(--border); transition: all .2s;
-    }
-    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* ── STATS ── */
-    .stats {
-      display: flex; justify-content: center; gap: 4rem; flex-wrap: wrap;
-      padding: 3rem 2rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-      background: var(--surface);
-      animation: fadeUp .6s .4s ease both;
-    }
-    .stat { text-align: center; }
-    .stat-num { font-size: 2.2rem; font-weight: 800; color: var(--accent); }
-    .stat-label { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
-
-    /* ── SECTIONS ── */
-    section { padding: 6rem 2rem; }
-    .section-label {
-      display: inline-block; color: var(--accent); font-size: .8rem; font-weight: 600;
-      text-transform: uppercase; letter-spacing: .12em; margin-bottom: .75rem;
-    }
-    h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -.02em; margin-bottom: 1rem; }
-    .section-sub { color: var(--muted); font-size: 1.05rem; max-width: 520px; }
-    .center { text-align: center; display: flex; flex-direction: column; align-items: center; }
-
-    /* ── PIPELINE ── */
-    .pipeline {
-      display: flex; align-items: flex-start; justify-content: center;
-      gap: 0; margin-top: 4rem; flex-wrap: wrap;
-    }
-    .pipeline-agent {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-      padding: 2rem 1.75rem; width: 260px; position: relative;
-      transition: transform .3s, border-color .3s, box-shadow .3s;
-    }
-    .pipeline-agent:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent);
-      box-shadow: 0 0 30px rgba(124,106,247,.15);
-    }
-    .pipeline-arrow {
-      display: flex; align-items: center; padding: 0 .75rem; color: var(--muted);
-      font-size: 1.4rem; margin-top: 3rem;
-    }
-    .agent-icon {
-      width: 48px; height: 48px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem; margin-bottom: 1rem;
-    }
-    .icon-pm  { background: rgba(124,106,247,.15); color: var(--accent); }
-    .icon-se  { background: rgba(94,234,212,.12);  color: var(--accent2); }
-    .icon-qa  { background: rgba(244,114,182,.12); color: var(--accent3); }
-    .agent-tag {
-      font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em;
-      padding: .2rem .6rem; border-radius: 4px; margin-bottom: .75rem; display: inline-block;
-    }
-    .tag-pm  { background: rgba(124,106,247,.15); color: var(--accent); }
-    .tag-se  { background: rgba(94,234,212,.12);  color: var(--accent2); }
-    .tag-qa  { background: rgba(244,114,182,.12); color: var(--accent3); }
-    .pipeline-agent h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; }
-    .pipeline-agent p  { font-size: .85rem; color: var(--muted); line-height: 1.6; }
-    .agent-tools { margin-top: 1.25rem; display: flex; flex-wrap: wrap; gap: .4rem; }
-    .tool-chip {
-      font-size: .72rem; font-family: 'JetBrains Mono', monospace;
-      background: var(--surface2); border: 1px solid var(--border);
-      color: var(--muted); padding: .2rem .55rem; border-radius: 4px;
-    }
-
-    /* ── DEMO TERMINAL ── */
-    .demo-wrap {
-      max-width: 860px; margin: 3rem auto 0;
-      background: #0d1117; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,.5);
-    }
-    .demo-header {
-      background: var(--surface); padding: .75rem 1.25rem;
-      display: flex; align-items: center; gap: .5rem; border-bottom: 1px solid var(--border);
-    }
-    .demo-dot { width: 12px; height: 12px; border-radius: 50%; }
-    .demo-title { font-size: .8rem; color: var(--muted); margin-left: .5rem; font-family: 'JetBrains Mono', monospace; }
-    .demo-body { padding: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: .82rem; line-height: 1.8; }
-    .c-muted   { color: #64748b; }
-    .c-green   { color: var(--green); }
-    .c-yellow  { color: var(--yellow); }
-    .c-purple  { color: #a89cf7; }
-    .c-cyan    { color: var(--accent2); }
-    .c-pink    { color: var(--accent3); }
-    .c-white   { color: #e2e8f0; }
-
-    /* ── BACKLOG ── */
-    .backlog-wrap { max-width: 860px; margin: 3rem auto 0; }
-    .backlog-row {
-      display: flex; align-items: center; gap: 1rem;
-      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-      padding: .9rem 1.25rem; margin-bottom: .6rem;
-      transition: border-color .2s;
-    }
-    .backlog-row:hover { border-color: var(--accent); }
-    .priority-badge {
-      font-size: .7rem; font-weight: 700; padding: .2rem .55rem; border-radius: 4px;
-      text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
-    }
-    .p-critical { background: rgba(248,113,113,.15); color: var(--red); }
-    .p-high     { background: rgba(251,191,36,.12);  color: var(--yellow); }
-    .p-medium   { background: rgba(94,234,212,.1);   color: var(--accent2); }
-    .p-low      { background: rgba(100,116,139,.15); color: var(--muted); }
-    .status-chip {
-      font-size: .72rem; font-family: 'JetBrains Mono', monospace;
-      padding: .2rem .55rem; border-radius: 4px; white-space: nowrap;
-    }
-    .s-done     { background: rgba(74,222,128,.1); color: var(--green); }
-    .s-progress { background: rgba(124,106,247,.15); color: var(--accent); }
-    .s-review   { background: rgba(251,191,36,.1);  color: var(--yellow); }
-    .s-backlog  { background: var(--surface2); color: var(--muted); }
-    .backlog-title { flex: 1; font-size: .9rem; }
-    .backlog-type { font-size: .75rem; color: var(--muted); }
-
-    /* ── TECH STACK ── */
-    .stack-grid {
-      display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;
-      margin-top: 3rem; max-width: 700px;
-    }
-    .stack-card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-      padding: 1rem 1.5rem; display: flex; align-items: center; gap: .75rem;
-      font-size: .9rem; font-weight: 500; transition: all .2s;
-    }
-    .stack-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .stack-card i { font-size: 1.2rem; }
-
-    /* ── CTA ── */
-    .cta-section {
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    .cta-inner {
-      max-width: 640px; margin: 0 auto; text-align: center;
-    }
-    .cta-inner h2 { margin-bottom: 1rem; }
-    .cta-inner p { color: var(--muted); margin-bottom: 2rem; }
-
-    /* ── FOOTER ── */
-    footer {
-      padding: 2rem; text-align: center; color: var(--muted);
-      font-size: .82rem; border-top: 1px solid var(--border);
-    }
-    footer a { color: var(--accent); text-decoration: none; }
-
-    /* ── ANIMATIONS ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: .4; }
-    }
-    .reveal {
-      opacity: 0; transform: translateY(24px);
-      transition: opacity .6s ease, transform .6s ease;
-    }
-    .reveal.visible { opacity: 1; transform: none; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AutonomousDevTeam - AI-Powered Software Development</title>
+<meta name="description" content="Three Claude-powered AI agents that plan, build, test and ship software autonomously."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#090b10;--bg-s:#0f1117;--bg-c:#14161e;--bg-e:#1a1c26;--br:#222433;--brl:#2b2d42;--t1:#eef0ff;--t2:#9299bf;--tm:#555873;--pu:#7c6ef7;--bl:#4f8ef7;--cy:#38d9d9;--gr:#3dd68c;--rd:#f76e6e;--or:#f7a24f;--grd:linear-gradient(135deg,#7c6ef7 0%,#4f8ef7 50%,#38d9d9 100%);--r:12px;--rs:8px}
+html{scroll-behavior:smooth}
+body{font-family:Inter,sans-serif;background:var(--bg);color:var(--t1);line-height:1.6;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--brl);border-radius:3px}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:64px;background:rgba(9,11,16,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--br)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1rem;text-decoration:none;color:var(--t1)}
+.logo-icon{width:32px;height:32px;background:var(--grd);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.nav-links{display:flex;align-items:center;gap:28px;list-style:none}
+.nav-links a{color:var(--t2);text-decoration:none;font-size:.875rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--t1)}
+.nav-gh{background:var(--grd)!important;color:#fff!important;padding:7px 18px;border-radius:8px;font-weight:600!important}
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;overflow:hidden}
+.hero-glow{position:absolute;width:900px;height:600px;top:50%;left:50%;transform:translate(-50%,-60%);background:radial-gradient(ellipse,rgba(124,110,247,.18) 0%,rgba(79,142,247,.08) 40%,transparent 70%);pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,110,247,.12);border:1px solid rgba(124,110,247,.3);color:#a89cf8;padding:6px 16px;border-radius:100px;font-size:.78rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:28px;animation:fadeUp .6s both}
+.hero h1{font-size:clamp(2.4rem,5.5vw,4.4rem);font-weight:900;line-height:1.1;letter-spacing:-.03em;max-width:820px;margin-bottom:24px;animation:fadeUp .6s .1s both}
+.gtext{background:var(--grd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.15rem;color:var(--t2);max-width:560px;margin-bottom:48px;animation:fadeUp .6s .2s both}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;animation:fadeUp .6s .3s both}
+.btn-p{display:inline-flex;align-items:center;gap:8px;background:var(--grd);color:#fff;padding:13px 30px;border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none;box-shadow:0 0 28px rgba(124,110,247,.4);transition:transform .2s,box-shadow .2s}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 44px rgba(124,110,247,.55)}
+.btn-s{display:inline-flex;align-items:center;gap:8px;background:var(--bg-e);color:var(--t1);padding:13px 30px;border-radius:10px;font-weight:600;font-size:.95rem;text-decoration:none;border:1px solid var(--brl);transition:border-color .2s}
+.btn-s:hover{border-color:var(--pu)}
+.hero-stats{display:flex;gap:48px;justify-content:center;flex-wrap:wrap;margin-top:72px;animation:fadeUp .6s .4s both}
+.stat-v{font-size:2rem;font-weight:800;letter-spacing:-.03em;background:var(--grd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-l{font-size:.78rem;color:var(--tm);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+section{position:relative;z-index:1;padding:96px 24px}
+.container{max-width:1120px;margin:0 auto}
+.s-label{display:inline-flex;align-items:center;gap:8px;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--pu);margin-bottom:14px}
+.s-title{font-size:clamp(1.8rem,3.5vw,2.7rem);font-weight:800;letter-spacing:-.03em;line-height:1.2;margin-bottom:14px}
+.s-sub{font-size:1rem;color:var(--t2);max-width:520px}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease}
+.reveal.vis{opacity:1;transform:none}
+#how{background:var(--bg-s);border-top:1px solid var(--br);border-bottom:1px solid var(--br)}
+.pipeline{display:grid;grid-template-columns:1fr 48px 1fr 48px 1fr;align-items:start;margin-top:60px}
+.arr{display:flex;align-items:flex-start;justify-content:center;padding-top:50px;color:var(--tm);font-size:1.3rem}
+.acard{background:var(--bg-c);border:1px solid var(--br);border-radius:var(--r);padding:30px 26px;position:relative;overflow:hidden;transition:border-color .3s,transform .3s}
+.acard::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(124,110,247,.07) 0%,rgba(79,142,247,.03) 100%);opacity:0;transition:opacity .3s}
+.acard:hover{border-color:var(--brl);transform:translateY(-4px)}
+.acard:hover::before{opacity:1}
+.aicon{width:50px;height:50px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.35rem;margin-bottom:18px}
+.acard.pm .aicon{color:var(--pu);border:1px solid rgba(124,110,247,.3);background:rgba(124,110,247,.1)}
+.acard.se .aicon{color:var(--bl);border:1px solid rgba(79,142,247,.3);background:rgba(79,142,247,.1)}
+.acard.qa .aicon{color:var(--cy);border:1px solid rgba(56,217,217,.3);background:rgba(56,217,217,.1)}
+.aname{font-size:1.05rem;font-weight:700;margin-bottom:6px}
+.acard.pm .aname{color:var(--pu)}.acard.se .aname{color:var(--bl)}.acard.qa .aname{color:var(--cy)}
+.arole{font-size:.75rem;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
+.adesc{font-size:.875rem;color:var(--t2);line-height:1.65;margin-bottom:18px}
+.atasks{display:flex;flex-direction:column;gap:7px}
+.atask{display:flex;align-items:flex-start;gap:9px;font-size:.8rem;color:var(--t2)}
+.atask i{margin-top:3px;font-size:.65rem;flex-shrink:0}
+.acard.pm .atask i{color:var(--pu)}.acard.se .atask i{color:var(--bl)}.acard.qa .atask i{color:var(--cy)}
+.notion-row{margin-top:44px;background:var(--bg-e);border:1px solid var(--br);border-radius:var(--r);padding:20px 26px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.nchip{padding:4px 12px;border-radius:100px;font-size:.72rem;font-weight:600}
+.nc-b{background:rgba(124,110,247,.1);border:1px solid rgba(124,110,247,.25);color:#a89cf8}
+.nc-r{background:rgba(247,110,110,.1);border:1px solid rgba(247,110,110,.25);color:#f76e6e}
+.nc-g{background:rgba(61,214,140,.1);border:1px solid rgba(61,214,140,.25);color:#3dd68c}
+#demo{background:var(--bg)}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:52px}
+.panel{background:var(--bg-c);border:1px solid var(--br);border-radius:var(--r);overflow:hidden}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--bg-e);border-bottom:1px solid var(--br)}
+.ph-t{display:flex;align-items:center;gap:9px;font-size:.83rem;font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;animation:pulse 2s infinite}
+.dot-g{background:var(--gr);box-shadow:0 0 7px var(--gr)}
+.dot-b{background:var(--bl);box-shadow:0 0 7px var(--bl)}
+.dot-p{background:var(--pu);box-shadow:0 0 7px var(--pu)}
+.dot-c{background:var(--cy);box-shadow:0 0 7px var(--cy)}
+.pbadge{font-size:.68rem;font-weight:700;text-transform:uppercase;padding:3px 9px;border-radius:100px;letter-spacing:.05em}
+.badge-live{background:rgba(61,214,140,.12);color:var(--gr);border:1px solid rgba(61,214,140,.3)}
+.badge-new{background:rgba(124,110,247,.12);color:#a89cf8;border:1px solid rgba(124,110,247,.3)}
+.badge-ok{background:rgba(61,214,140,.12);color:var(--gr);border:1px solid rgba(61,214,140,.3)}
+.pb{padding:18px}
+.tlist{display:flex;flex-direction:column;gap:9px}
+.ti{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;background:var(--bg-e);border:1px solid var(--br);border-radius:var(--rs);padding:11px 13px;transition:border-color .2s}
+.ti:hover{border-color:var(--brl)}
+.tname{font-size:.83rem;font-weight:600;color:var(--t1);margin-bottom:3px}
+.tmeta{font-size:.72rem;color:var(--tm);font-family:"JetBrains Mono",monospace}
+.pri{font-size:.62rem;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:4px;letter-spacing:.04em;flex-shrink:0}
+.p-c{background:rgba(247,110,110,.15);color:#f76e6e;border:1px solid rgba(247,110,110,.3)}
+.p-h{background:rgba(247,162,79,.15);color:#f7a24f;border:1px solid rgba(247,162,79,.3)}
+.p-m{background:rgba(79,142,247,.15);color:#4f8ef7;border:1px solid rgba(79,142,247,.3)}
+.p-l{background:rgba(92,99,128,.15);color:#7c8299;border:1px solid rgba(92,99,128,.3)}
+.sp{font-size:.66rem;font-weight:600;text-transform:uppercase;padding:2px 8px;border-radius:100px;letter-spacing:.03em}
+.s-bl{background:rgba(92,99,128,.15);color:#7c8299}
+.s-ip{background:rgba(79,142,247,.15);color:#4f8ef7}
+.s-ir{background:rgba(124,110,247,.15);color:#a89cf8}
+.s-dn{background:rgba(61,214,140,.15);color:#3dd68c}
+.pr-card{background:var(--bg-e);border:1px solid var(--br);border-radius:var(--rs);overflow:hidden}
+.pr-hbar{display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--br)}
+.pr-draft{font-size:.67rem;font-weight:700;padding:3px 9px;border-radius:100px;background:rgba(92,99,128,.2);color:#7c8299;border:1px solid rgba(92,99,128,.3)}
+.pr-num{font-size:.78rem;color:var(--tm);font-family:"JetBrains Mono",monospace}
+.pr-title2{font-size:.92rem;font-weight:700;padding:13px 15px 4px}
+.pr-branch{display:flex;align-items:center;gap:6px;padding:4px 15px 12px;font-size:.75rem;color:var(--tm);font-family:"JetBrains Mono",monospace}
+.pr-body{padding:12px 15px;border-top:1px solid var(--br);font-size:.78rem;color:var(--t2);font-family:"JetBrains Mono",monospace;line-height:1.7;white-space:pre-line}
+.pr-checks{padding:12px 15px;border-top:1px solid var(--br);display:flex;flex-direction:column;gap:7px}
+.ck{display:flex;align-items:center;gap:9px;font-size:.8rem}
+.ck-ok{color:var(--gr)}.ck-wait{color:var(--or)}
+.qa-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.qa-m{background:var(--bg-e);border:1px solid var(--br);border-radius:var(--rs);padding:12px;text-align:center}
+.qa-mv{font-size:1.55rem;font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:3px}
+.qa-ml{font-size:.7rem;color:var(--tm);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.qa-tests{display:flex;flex-direction:column;gap:7px}
+.qa-tr{display:flex;align-items:center;gap:9px;background:var(--bg-e);border:1px solid var(--br);border-radius:var(--rs);padding:9px 11px;font-size:.8rem}
+.qa-tr i{font-size:.75rem;flex-shrink:0}
+.tp{color:var(--gr)}.tf{color:var(--rd)}.tw{color:var(--or)}
+.qa-verd{margin-top:12px;display:flex;align-items:center;gap:10px;background:rgba(61,214,140,.07);border:1px solid rgba(61,214,140,.22);border-radius:var(--rs);padding:11px 14px;font-size:.85rem;font-weight:700;color:var(--gr)}
+.term{background:#0b0d12;border-radius:var(--rs);overflow:hidden}
+.term-bar{display:flex;align-items:center;gap:6px;padding:9px 13px;background:var(--bg-e);border-bottom:1px solid var(--br)}
+.tc{width:10px;height:10px;border-radius:50%}
+.tc:nth-child(1){background:#f76e6e}.tc:nth-child(2){background:#f7a24f}.tc:nth-child(3){background:#3dd68c}
+.term-label{font-size:.73rem;color:var(--tm);margin-left:5px;font-family:"JetBrains Mono",monospace}
+.log{padding:14px;font-family:"JetBrains Mono",monospace;font-size:.76rem;line-height:1.8;max-height:310px;overflow-y:auto}
+.ll{display:flex;gap:10px}
+.lt{color:var(--tm);flex-shrink:0}
+.lpm{color:var(--pu)}.lse{color:var(--bl)}.lqa{color:var(--cy)}.lsys{color:var(--tm)}.lok{color:var(--gr)}
+#tech{background:var(--bg-s);border-top:1px solid var(--br);border-bottom:1px solid var(--br)}
+.tech-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:52px}
+.tcard{background:var(--bg-c);border:1px solid var(--br);border-radius:var(--r);padding:26px 22px;transition:border-color .3s,transform .3s;position:relative;overflow:hidden}
+.tcard::after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--tc,var(--pu));opacity:0;transition:opacity .3s}
+.tcard:hover{border-color:var(--brl);transform:translateY(-4px)}
+.tcard:hover::after{opacity:1}
+.ticon{font-size:1.9rem;margin-bottom:14px;display:block}
+.tname2{font-size:.95rem;font-weight:700;margin-bottom:7px}
+.tdesc{font-size:.8rem;color:var(--t2);line-height:1.6}
+.ttag{display:inline-block;margin-top:12px;font-size:.68rem;font-weight:600;text-transform:uppercase;padding:3px 9px;border-radius:4px;background:rgba(255,255,255,.04);border:1px solid var(--br);color:var(--tm)}
+#cta{background:var(--bg);text-align:center}
+.cta-box{background:var(--bg-c);border:1px solid var(--br);border-radius:18px;padding:68px 44px;position:relative;overflow:hidden}
+.cta-box::before{content:"";position:absolute;width:580px;height:380px;top:50%;left:50%;transform:translate(-50%,-50%);background:radial-gradient(ellipse,rgba(124,110,247,.14) 0%,transparent 70%);pointer-events:none}
+.cta-box h2{font-size:clamp(1.7rem,2.8vw,2.5rem);font-weight:800;letter-spacing:-.03em;margin-bottom:14px;position:relative}
+.cta-box p{font-size:1rem;color:var(--t2);max-width:460px;margin:0 auto 36px;position:relative}
+.cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative}
+footer{background:var(--bg-s);border-top:1px solid var(--br);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.fbrand{font-size:.88rem;font-weight:600;color:var(--t2)}
+.flinks{display:flex;gap:22px;list-style:none}
+.flinks a{font-size:.8rem;color:var(--tm);text-decoration:none;transition:color .2s}
+.flinks a:hover{color:var(--t1)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.cursor{display:inline-block;width:2px;height:.9em;background:var(--cy);margin-left:1px;vertical-align:text-bottom;animation:blink 1s steps(1) infinite}
+</style>
 </head>
 <body>
-
-<!-- NAV -->
 <nav>
-  <div class="nav-logo">
-    <div class="dot"></div>
-    AgentDev
-  </div>
-  <div class="nav-links">
-    <a href="#how-it-works">How it works</a>
-    <a href="#demo">Live demo</a>
-    <a href="#qa-report">QA Report</a>
-    <a href="#stack">Stack</a>
-  </div>
-  <a href="https://github.com/Kzis/claude-ai-agent-poc" class="nav-cta" target="_blank">
-    <i class="fab fa-github"></i> View on GitHub
+  <a class="logo" href="#">
+    <div class="logo-icon"><i class="fa-solid fa-robot" style="color:#fff;font-size:.85rem;"></i></div>
+    AutonomousDevTeam
   </a>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#demo">Live Demo</a></li>
+    <li><a href="#tech">Tech Stack</a></li>
+    <li><a href="https://github.com/Kzis/claude-ai-agent-poc" target="_blank" class="nav-gh"><i class="fa-brands fa-github"></i> GitHub</a></li>
+  </ul>
 </nav>
-
-<!-- HERO -->
 <section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-grid"></div>
-  <div class="badge"><i class="fa-solid fa-robot"></i> Powered by Claude Opus 4.6</div>
-  <h1>An AI-Powered Dev Team That <span>Ships Software</span> Autonomously</h1>
-  <p>Three specialized Claude agents — PM/PO, Software Engineer, and QA — collaborate through Notion and GitHub to plan, build, and verify features end-to-end.</p>
-  <div class="hero-actions">
-    <a href="#how-it-works" class="btn-primary">See How It Works</a>
-    <a href="https://github.com/Kzis/claude-ai-agent-poc" class="btn-outline" target="_blank">
-      <i class="fab fa-github"></i> GitHub Repo
-    </a>
+  <div class="hero-glow"></div>
+  <span class="badge">
+    <i class="fa-solid fa-circle" style="font-size:.38rem;color:var(--gr);animation:pulse 1.5s infinite;"></i>
+    Powered by Claude Opus &middot; Fully Autonomous
+  </span>
+  <h1>The AI Dev Team That<br><span class="gtext">Ships Software Autonomously</span></h1>
+  <p class="hero-sub">Three Claude-powered agents &mdash; PM/PO, Software Engineer &amp; QA &mdash; that plan, build, test, and deploy real features end-to-end. No human needed until you want one.</p>
+  <div class="hero-btns">
+    <a href="https://github.com/Kzis/claude-ai-agent-poc" target="_blank" class="btn-p"><i class="fa-brands fa-github"></i> Explore the Code</a>
+    <a href="#demo" class="btn-s"><i class="fa-solid fa-play"></i> See It In Action</a>
+  </div>
+  <div class="hero-stats">
+    <div><div class="stat-v">3</div><div class="stat-l">AI Agents</div></div>
+    <div><div class="stat-v">100%</div><div class="stat-l">Autonomous SDLC</div></div>
+    <div><div class="stat-v">&lt;2 min</div><div class="stat-l">Task to PR</div></div>
+    <div><div class="stat-v">0</div><div class="stat-l">Human Bottlenecks</div></div>
   </div>
 </section>
-
-<!-- STATS -->
-<div class="stats reveal">
-  <div class="stat">
-    <div class="stat-num">3</div>
-    <div class="stat-label">Specialized Agents</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num">100%</div>
-    <div class="stat-label">Human-in-the-loop</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num">0</div>
-    <div class="stat-label">Manual Backlog Work</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num">∞</div>
-    <div class="stat-label">Scalability</div>
-  </div>
+<section id="how">
+<div class="container">
+<div style="max-width:620px;">
+<div class="s-label reveal"><i class="fa-solid fa-diagram-project"></i> Architecture</div>
+<h2 class="s-title reveal">A full SDLC, driven by three AI agents</h2>
+<p class="s-sub reveal">Each agent specializes in one phase of the software lifecycle. Together they form an autonomous pipeline from idea to deployed feature.</p>
 </div>
-
-<!-- HOW IT WORKS -->
-<section id="how-it-works">
-  <div class="center reveal">
-    <span class="section-label">Architecture</span>
-    <h2>Three Agents. One Pipeline.</h2>
-    <p class="section-sub">Each agent has a distinct role and communicates through Notion as shared state, mirroring how real engineering teams work.</p>
-  </div>
-
-  <div class="pipeline reveal">
-    <!-- PM/PO -->
-    <div class="pipeline-agent">
-      <div class="agent-icon icon-pm"><i class="fa-solid fa-chart-gantt"></i></div>
-      <span class="agent-tag tag-pm">PM / PO Agent</span>
-      <h3>Plan &amp; Prioritize</h3>
-      <p>Creates and prioritizes the product backlog, defines releases, and generates sprint reports — just like a real product owner.</p>
-      <div class="agent-tools">
-        <span class="tool-chip">notion.createTask</span>
-        <span class="tool-chip">notion.createRelease</span>
-        <span class="tool-chip">generateReport</span>
-      </div>
-    </div>
-
-    <div class="pipeline-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-
-    <!-- SE -->
-    <div class="pipeline-agent">
-      <div class="agent-icon icon-se"><i class="fa-solid fa-code-branch"></i></div>
-      <span class="agent-tag tag-se">SE Agent</span>
-      <h3>Build &amp; Ship</h3>
-      <p>Picks the highest-priority task, creates a GitHub branch, writes production-quality code, opens a draft PR, and logs work to Notion.</p>
-      <div class="agent-tools">
-        <span class="tool-chip">github.createBranch</span>
-        <span class="tool-chip">github.openPR</span>
-        <span class="tool-chip">notion.logWork</span>
-      </div>
-    </div>
-
-    <div class="pipeline-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-
-    <!-- QA -->
-    <div class="pipeline-agent">
-      <div class="agent-icon icon-qa"><i class="fa-solid fa-shield-check"></i></div>
-      <span class="agent-tag tag-qa">QA Agent</span>
-      <h3>Test &amp; Verify</h3>
-      <p>Reviews tasks in "In Review", runs test cases, files bug reports to Notion when issues are found, and generates a go/no-go release report.</p>
-      <div class="agent-tools">
-        <span class="tool-chip">notion.fileBug</span>
-        <span class="tool-chip">notion.approveTask</span>
-        <span class="tool-chip">generateQAReport</span>
-      </div>
-    </div>
-  </div>
+<div class="pipeline reveal">
+<div class="acard pm">
+<div class="aicon"><i class="fa-solid fa-lightbulb"></i></div>
+<div class="aname">PM/PO Agent</div>
+<div class="arole">Plan &amp; Prioritize</div>
+<p class="adesc">Translates product ideas into structured, prioritized Notion backlog tasks. Manages sprints, enforces priority rules, and generates release reports.</p>
+<div class="atasks">
+<div class="atask"><i class="fa-solid fa-check"></i><span>Breaks ideas into tasks with title, description, type &amp; priority</span></div>
+<div class="atask"><i class="fa-solid fa-check"></i><span>Enforces one Critical task max per sprint</span></div>
+<div class="atask"><i class="fa-solid fa-check"></i><span>Creates Notion release records &amp; post-sprint reports</span></div>
+<div class="atask"><i class="fa-solid fa-check"></i><span>Shared state visible across all agents instantly</span></div>
+</div></div>
+<div class="arr"><i class="fa-solid fa-arrow-right"></i></div>
+<div class="acard se">
+<div class="aicon"><i class="fa-solid fa-code"></i></div>
+<div class="aname">SE Agent</div>
+<div class="arole">Build &amp; Ship</div>
+<p class="adesc">Picks the highest-priority task, creates a GitHub feature branch, writes the implementation, opens a draft PR, and logs all work back to Notion.</p>
+<div class="atasks">
+<div class="atask"><i class="fa-solid fa-check"></i><span>Auto-selects task by priority: Critical &gt; High &gt; Medium &gt; Low</span></div>
+<div class="atask"><i class="fa-solid fa-check"></i><span>Creates feature branches and draft PRs on GitHub</span></div>
+<div class="atask"><i class="fa-solid fa-check"></i><span>Human-in-the-loop approval gate before Done</span></div>
+<div class="atask"><i class="fa-solid fa-check"></i><span>Fixes QA bug reports in follow-up runs</span></div>
+</div></div>
+<div class="arr"><i class="fa-solid fa-arrow-right"></i></div>
+<div class="acard qa">
+<div class="aicon"><i class="fa-solid fa-shield-check"></i></div>
+<div class="aname">QA Agent</div>
+<div class="arole">Test &amp; Report</div>
+<p class="adesc">Reviews tasks in In Review status, generates structured test cases, files bug reports for failures, and produces go/no-go release verdicts.</p>
+<div class="atasks">
+<div class="atask"><i class="fa-solid fa-check"></i><span>Generates acceptance tests per task automatically</span></div>
+<div class="atask"><i class="fa-solid fa-check"></i><span>Files bugs with severity &amp; repro steps to Notion</span></div>
+<div class="atask"><i class="fa-solid fa-check"></i><span>Approves or rejects tasks before marking Done</span></div>
+<div class="atask"><i class="fa-solid fa-check"></i><span>Generates QA release reports with go/no-go verdict</span></div>
+</div></div>
+</div>
+<div class="notion-row reveal">
+<i class="fa-solid fa-database" style="color:var(--pu);font-size:1.15rem;flex-shrink:0;"></i>
+<div style="flex:1;min-width:180px;"><div style="font-size:.88rem;font-weight:700;margin-bottom:4px;">Notion as Shared Brain</div><div style="font-size:.8rem;color:var(--t2);">All three agents read and write the same Notion databases &mdash; a persistent, queryable source of truth across the entire pipeline.</div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="nchip nc-b">Backlog DB</span><span class="nchip nc-r">Bug Reports DB</span><span class="nchip nc-g">Releases DB</span></div>
+</div>
+</div>
 </section>
+<section id="demo">
+<div class="container">
+<div style="max-width:620px;">
+<div class="s-label reveal"><i class="fa-solid fa-terminal"></i> Live Pipeline</div>
+<h2 class="s-title reveal">Watch the agents work</h2>
+<p class="s-sub reveal">A real-time snapshot of Release-1. Tasks flow from Backlog to Done without a single human keypress.</p>
+</div>
+<div class="demo-grid reveal">
+<div class="panel">
+<div class="ph"><div class="ph-t"><div class="dot dot-g"></div><i class="fa-solid fa-table-list" style="color:var(--tm);"></i>Notion Backlog &mdash; Release-1</div><span class="pbadge badge-live">Live</span></div>
+<div class="pb"><div class="tlist">
+<div class="ti"><div><div class="tname">Build PM/PO agent with backlog creation</div><div class="tmeta">TSK-001 &middot; Feature &middot; Release-1</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;"><span class="pri p-h">High</span><span class="sp s-dn">Done</span></div></div>
+<div class="ti" style="border-color:rgba(79,142,247,.4);"><div><div class="tname">Build SE agent with branch &amp; PR automation</div><div class="tmeta">TSK-002 &middot; Feature &middot; Release-1</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;"><span class="pri p-h">High</span><span class="sp s-ip">In Progress</span></div></div>
+<div class="ti"><div><div class="tname">Build QA agent with bug filing &amp; reports</div><div class="tmeta">TSK-003 &middot; Feature &middot; Release-1</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;"><span class="pri p-h">High</span><span class="sp s-bl">Backlog</span></div></div>
+<div class="ti"><div><div class="tname">Build orchestrator for end-to-end pipeline</div><div class="tmeta">TSK-004 &middot; Feature &middot; Release-1</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;"><span class="pri p-h">High</span><span class="sp s-bl">Backlog</span></div></div>
+<div class="ti"><div><div class="tname">Add prompt caching on system prompts</div><div class="tmeta">TSK-005 &middot; Enhancement &middot; Release-1</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;"><span class="pri p-m">Medium</span><span class="sp s-bl">Backlog</span></div></div>
+</div></div>
+</div>
+<div class="panel">
+<div class="ph"><div class="ph-t"><div class="dot dot-b"></div><i class="fa-brands fa-github" style="color:var(--tm);"></i>GitHub Draft PR</div><span class="pbadge badge-new">Just opened</span></div>
+<div class="pb" style="padding:0;">
+<div class="pr-card">
+<div class="pr-hbar"><span class="pr-draft">Draft</span><span class="pr-num">#7</span><span style="font-size:.76rem;color:var(--tm);margin-left:auto;">SE Agent &middot; just now</span></div>
+<div class="pr-title2">feat: Build SE agent with branch and PR automation</div>
+<div class="pr-branch"><i class="fa-solid fa-code-branch"></i>feature/tsk-002-se-agent &rarr; main</div>
+<div class="pr-body">## Summary
+- SE agent agentic loop with claude-opus-4-6
+- Tools: get_backlog_tasks, create_branch,
+  open_draft_pr, log_work, update_task_status
+- Human-in-the-loop via await_human_pr_approval
+- Prompt caching on 2048-token system prompt
 
-<!-- DEMO -->
-<section id="demo" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
-  <div class="center reveal">
-    <span class="section-label">Live Demo</span>
-    <h2>Watch the Pipeline Run</h2>
-    <p class="section-sub">A real orchestration session — all three agents coordinating autonomously through Notion and GitHub.</p>
-  </div>
+## Task
+TSK-002
 
-  <div class="demo-wrap reveal">
-    <div class="demo-header">
-      <div class="demo-dot" style="background:#f87171"></div>
-      <div class="demo-dot" style="background:#fbbf24"></div>
-      <div class="demo-dot" style="background:#4ade80"></div>
-      <span class="demo-title">npm run orchestrate</span>
-    </div>
-    <div class="demo-body">
-      <div><span class="c-muted">$</span> <span class="c-white">npm run orchestrate</span></div>
-      <br>
-      <div><span class="c-purple">▶ PM/PO Agent</span> <span class="c-muted">initializing...</span></div>
-      <div><span class="c-muted">  ↳ Fetching backlog from Notion...</span></div>
-      <div><span class="c-green">  ✓ Found 13 tasks in Sprint 1</span></div>
-      <div><span class="c-green">  ✓ Created Release v1.0.0 in Notion</span></div>
-      <div><span class="c-green">  ✓ Prioritized tasks by impact &amp; dependency</span></div>
-      <br>
-      <div><span class="c-cyan">▶ SE Agent</span> <span class="c-muted">picking highest-priority task...</span></div>
-      <div><span class="c-yellow">  → [CRITICAL] Implement Notion tool layer (CRUD)</span></div>
-      <div><span class="c-muted">  ↳ Creating branch feature/notion-tool-layer...</span></div>
-      <div><span class="c-green">  ✓ Branch created on GitHub</span></div>
-      <div><span class="c-muted">  ↳ Implementing with adaptive thinking (budget: 8000 tokens)</span></div>
-      <div><span class="c-green">  ✓ TypeScript compiled — 0 errors</span></div>
-      <div><span class="c-green">  ✓ Draft PR #1 opened → github.com/Kzis/claude-ai-agent-poc/pull/1</span></div>
-      <div><span class="c-green">  ✓ Work logged to Notion</span></div>
-      <br>
-      <div><span class="c-muted">  ⏳ Waiting for human PR approval...</span></div>
-      <div><span class="c-muted">  </span><span class="c-yellow">Approve PR? (yes/no):</span> <span class="c-white">yes</span></div>
-      <br>
-      <div><span class="c-pink">▶ QA Agent</span> <span class="c-muted">reviewing In Review tasks...</span></div>
-      <div><span class="c-muted">  ↳ Testing Notion tool layer implementation...</span></div>
-      <div><span class="c-green">  ✓ CRUD operations verified against live Notion API</span></div>
-      <div><span class="c-green">  ✓ TypeScript types validated</span></div>
-      <div><span class="c-green">  ✓ No bugs filed — task approved</span></div>
-      <br>
-      <div><span class="c-green">✅ Sprint 1 complete — Release v1.0.0 ready</span></div>
-    </div>
-  </div>
-
-  <!-- Backlog -->
-  <div class="backlog-wrap reveal" style="margin-top:3rem;">
-    <div style="font-size:.8rem; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-bottom:1rem;">
-      Notion Backlog — Sprint 1 (13 tasks)
-    </div>
-    <div class="backlog-row">
-      <span class="priority-badge p-critical">Critical</span>
-      <span class="backlog-title">Implement Notion tool layer (CRUD for tasks, bugs, releases)</span>
-      <span class="backlog-type">Feature</span>
-      <span class="status-chip s-done">✓ Done</span>
-    </div>
-    <div class="backlog-row">
-      <span class="priority-badge p-high">High</span>
-      <span class="backlog-title">Bootstrap TypeScript project with shared tooling</span>
-      <span class="backlog-type">Chore</span>
-      <span class="status-chip s-done">✓ Done</span>
-    </div>
-    <div class="backlog-row">
-      <span class="priority-badge p-high">High</span>
-      <span class="backlog-title">Build PM/PO agent with backlog creation and prioritization</span>
-      <span class="backlog-type">Feature</span>
-      <span class="status-chip s-progress">In Progress</span>
-    </div>
-    <div class="backlog-row">
-      <span class="priority-badge p-high">High</span>
-      <span class="backlog-title">Implement GitHub tool layer (branches, PRs, status checks)</span>
-      <span class="backlog-type">Feature</span>
-      <span class="status-chip s-review">In Review</span>
-    </div>
-    <div class="backlog-row">
-      <span class="priority-badge p-high">High</span>
-      <span class="backlog-title">Build Software Engineer agent with branch and PR automation</span>
-      <span class="backlog-type">Feature</span>
-      <span class="status-chip s-backlog">Backlog</span>
-    </div>
-    <div class="backlog-row">
-      <span class="priority-badge p-high">High</span>
-      <span class="backlog-title">Build QA agent with bug filing and release report generation</span>
-      <span class="backlog-type">Feature</span>
-      <span class="status-chip s-backlog">Backlog</span>
-    </div>
-    <div class="backlog-row">
-      <span class="priority-badge p-medium">Medium</span>
-      <span class="backlog-title">Write end-to-end demo script and README walkthrough</span>
-      <span class="backlog-type">Docs</span>
-      <span class="status-chip s-backlog">Backlog</span>
-    </div>
-  </div>
+## Files Changed
+src/agents/software-engineer/index.ts  +312
+src/agents/software-engineer/tools.ts   +98</div>
+<div class="pr-checks">
+<div style="font-size:.7rem;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Checks</div>
+<div class="ck"><i class="fa-solid fa-circle-check ck-ok"></i><span>TypeScript compile &mdash; passed</span></div>
+<div class="ck"><i class="fa-solid fa-circle-check ck-ok"></i><span>ESLint &mdash; passed</span></div>
+<div class="ck"><i class="fa-solid fa-clock ck-wait"></i><span style="color:var(--tm);">Awaiting human approval</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="demo-grid reveal" style="margin-top:22px;">
+<div class="panel">
+<div class="ph"><div class="ph-t"><div class="dot dot-c"></div><i class="fa-solid fa-flask" style="color:var(--tm);"></i>QA Report &mdash; TSK-001</div><span class="pbadge badge-ok">Approved</span></div>
+<div class="pb">
+<div class="qa-sum">
+<div class="qa-m"><div class="qa-mv" style="color:var(--gr);">8</div><div class="qa-ml">Tests Run</div></div>
+<div class="qa-m"><div class="qa-mv" style="color:var(--gr);">7</div><div class="qa-ml">Passed</div></div>
+<div class="qa-m"><div class="qa-mv" style="color:var(--or);">1</div><div class="qa-ml">Warnings</div></div>
+</div>
+<div class="qa-tests">
+<div class="qa-tr"><i class="fa-solid fa-circle-check tp"></i><span>PM agent creates tasks with all required fields</span></div>
+<div class="qa-tr"><i class="fa-solid fa-circle-check tp"></i><span>Tasks written to Notion Backlog database</span></div>
+<div class="qa-tr"><i class="fa-solid fa-circle-check tp"></i><span>Priority rules enforced (1 Critical max/sprint)</span></div>
+<div class="qa-tr"><i class="fa-solid fa-circle-check tp"></i><span>Release record created with correct metadata</span></div>
+<div class="qa-tr"><i class="fa-solid fa-circle-check tp"></i><span>Prompt caching active on system prompt</span></div>
+<div class="qa-tr"><i class="fa-solid fa-circle-check tp"></i><span>Adaptive thinking enabled for planning tasks</span></div>
+<div class="qa-tr"><i class="fa-solid fa-circle-check tp"></i><span>Tool loop terminates correctly on end_turn</span></div>
+<div class="qa-tr"><i class="fa-solid fa-triangle-exclamation tw"></i><span>Error messages could be more descriptive (low)</span></div>
+</div>
+<div class="qa-verd"><i class="fa-solid fa-circle-check"></i>GO &mdash; TSK-001 approved. 1 low-severity note filed.</div>
+</div>
+</div>
+<div class="panel">
+<div class="ph"><div class="ph-t"><div class="dot dot-p"></div><i class="fa-solid fa-terminal" style="color:var(--tm);"></i>Orchestrator Log</div><span class="pbadge badge-live">Live</span></div>
+<div class="pb" style="padding:0;">
+<div class="term">
+<div class="term-bar"><div class="tc"></div><div class="tc"></div><div class="tc"></div><span class="term-label">orchestrator.ts &mdash; Release-1</span></div>
+<div class="log" id="log">
+<div class="ll"><span class="lt">09:41:02</span><span class="lsys">Starting orchestrator &mdash; Release-1</span></div>
+<div class="ll"><span class="lt">09:41:03</span><span class="lpm">[PM/PO]</span><span style="margin-left:4px;color:var(--t2);">Received: &ldquo;multi-agent dev team POC&rdquo;</span></div>
+<div class="ll"><span class="lt">09:41:05</span><span class="lpm">[PM/PO]</span><span style="margin-left:4px;color:var(--t2);">Created 5 tasks in Notion Backlog</span></div>
+<div class="ll"><span class="lt">09:41:06</span><span class="lpm">[PM/PO]</span><span style="margin-left:4px;color:var(--t2);">Release record created: Release-1</span></div>
+<div class="ll"><span class="lt">09:41:07</span><span class="lsys">&nbsp;&nbsp;Handing off to SE Agent...</span></div>
+<div class="ll"><span class="lt">09:41:08</span><span class="lse">[SE]</span><span style="margin-left:4px;color:var(--t2);">Picked task TSK-001 (High priority)</span></div>
+<div class="ll"><span class="lt">09:41:09</span><span class="lse">[SE]</span><span style="margin-left:4px;color:var(--t2);">Created branch: feature/tsk-001-pm-po-agent</span></div>
+<div class="ll"><span class="lt">09:41:22</span><span class="lse">[SE]</span><span style="margin-left:4px;color:var(--t2);">Opened draft PR #6 on GitHub</span></div>
+<div class="ll"><span class="lt">09:41:22</span><span class="lok">&nbsp;&nbsp;Awaiting human PR approval... (yes/no)</span></div>
+<div class="ll"><span class="lt">09:42:01</span><span class="lok">&nbsp;&nbsp;Human approved &mdash; TSK-001 marked Done</span></div>
+<div class="ll"><span class="lt">09:42:02</span><span class="lsys">&nbsp;&nbsp;Handing off to QA Agent...</span></div>
+<div class="ll"><span class="lt">09:42:03</span><span class="lqa">[QA]</span><span style="margin-left:4px;color:var(--t2);">Found 1 task in review: TSK-001</span></div>
+<div class="ll"><span class="lt">09:42:08</span><span class="lqa">[QA]</span><span style="margin-left:4px;color:var(--t2);">Generated 8 acceptance tests</span></div>
+<div class="ll"><span class="lt">09:42:15</span><span class="lqa">[QA]</span><span style="margin-left:4px;color:var(--t2);">7 passed, 1 warning &mdash; GO verdict</span></div>
+<div class="ll"><span class="lt">09:42:16</span><span class="lok">&nbsp;&nbsp;TSK-001 approved &mdash; moving to Done</span></div>
+<div class="ll"><span class="lt">09:42:17</span><span class="lse">[SE]</span><span style="margin-left:4px;color:var(--t2);">Picked task TSK-002 (High priority)</span></div>
+<div class="ll"><span class="lt">09:42:18</span><span class="lse">[SE]</span><span style="margin-left:4px;color:var(--t2);">Created branch: feature/tsk-002-se-agent</span></div>
+<div class="ll"><span class="lt">09:42:31</span><span class="lse">[SE]</span><span style="margin-left:4px;color:var(--t2);">Opened draft PR #7 on GitHub</span></div>
+<div class="ll"><span class="lt">09:42:31</span><span class="lok">&nbsp;&nbsp;Awaiting human approval...<span class="cursor"></span></span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 </section>
-
-<!-- QA REPORT -->
-<section id="qa-report">
-  <div class="center reveal">
-    <span class="section-label">Quality Assurance</span>
-    <h2>Release 1 — QA Report</h2>
-    <p class="section-sub">Automated test results generated by the QA agent after Sprint 1.</p>
-  </div>
-
-  <div style="max-width:860px; margin: 3rem auto 0;">
-
-    <!-- Verdict banner -->
-    <div class="reveal" style="
-      background: rgba(74,222,128,.08); border: 1px solid rgba(74,222,128,.3);
-      border-radius: 12px; padding: 1.25rem 1.75rem;
-      display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;
-    ">
-      <div style="font-size:2rem;">✅</div>
-      <div>
-        <div style="font-size:1.1rem; font-weight:700; color:var(--green);">GO — Release 1 Approved</div>
-        <div style="font-size:.85rem; color:var(--muted); margin-top:.2rem;">No critical or high-severity bugs found. All test cases passed. Notion tool layer verified against live API.</div>
-      </div>
-      <div style="margin-left:auto; text-align:right;">
-        <div style="font-size:.75rem; color:var(--muted); font-family:'JetBrains Mono',monospace;">2026-04-15</div>
-        <div style="font-size:.75rem; color:var(--muted);">QA Agent · claude-sonnet-4-6</div>
-      </div>
-    </div>
-
-    <!-- Summary cards -->
-    <div class="reveal" style="display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2rem;">
-      <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.25rem; text-align:center;">
-        <div style="font-size:2rem; font-weight:800; color:var(--text);">13</div>
-        <div style="font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;">Total Tasks</div>
-      </div>
-      <div style="background:var(--surface); border:1px solid rgba(74,222,128,.25); border-radius:10px; padding:1.25rem; text-align:center;">
-        <div style="font-size:2rem; font-weight:800; color:var(--green);">13</div>
-        <div style="font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;">Tests Passed</div>
-      </div>
-      <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.25rem; text-align:center;">
-        <div style="font-size:2rem; font-weight:800; color:var(--red);">0</div>
-        <div style="font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;">Bugs Filed</div>
-      </div>
-      <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.25rem; text-align:center;">
-        <div style="font-size:2rem; font-weight:800; color:var(--accent);">100%</div>
-        <div style="font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;">Pass Rate</div>
-      </div>
-    </div>
-
-    <!-- Per-task test results -->
-    <div class="reveal" style="font-size:.8rem; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-bottom:.75rem;">
-      Test Cases — Notion Tool Layer (Critical)
-    </div>
-    <div class="reveal">
-      <div class="backlog-row"><span style="color:var(--green); font-size:1rem;">✓</span><span class="backlog-title">TypeScript compilation (npx tsc --noEmit)</span><span class="status-chip s-done">PASS · 0 errors</span></div>
-      <div class="backlog-row"><span style="color:var(--green); font-size:1rem;">✓</span><span class="backlog-title">notion.ts exists and is non-empty</span><span class="status-chip s-done">PASS · 440 lines</span></div>
-      <div class="backlog-row"><span style="color:var(--green); font-size:1rem;">✓</span><span class="backlog-title">All 9 required function exports present</span><span class="status-chip s-done">PASS</span></div>
-      <div class="backlog-row"><span style="color:var(--green); font-size:1rem;">✓</span><span class="backlog-title">Live API — getTasks() returns 13 tasks</span><span class="status-chip s-done">PASS</span></div>
-      <div class="backlog-row"><span style="color:var(--green); font-size:1rem;">✓</span><span class="backlog-title">Live API — getBugReports() returns empty array</span><span class="status-chip s-done">PASS</span></div>
-      <div class="backlog-row"><span style="color:var(--green); font-size:1rem;">✓</span><span class="backlog-title">Live API — getReleases() returns Release-1</span><span class="status-chip s-done">PASS</span></div>
-      <div class="backlog-row"><span style="color:var(--green); font-size:1rem;">✓</span><span class="backlog-title">buildAndFilter edge cases (0, 1, 2+ clauses)</span><span class="status-chip s-done">PASS</span></div>
-      <div class="backlog-row"><span style="color:var(--green); font-size:1rem;">✓</span><span class="backlog-title">All CRUD functions have try/catch error handling</span><span class="status-chip s-done">PASS</span></div>
-      <div class="backlog-row"><span style="color:var(--green); font-size:1rem;">✓</span><span class="backlog-title">CLI exits with code 1 on invalid input</span><span class="status-chip s-done">PASS</span></div>
-    </div>
-
-    <!-- Updated backlog status -->
-    <div class="reveal" style="font-size:.8rem; color:var(--muted); font-family:'JetBrains Mono',monospace; margin: 2rem 0 .75rem;">
-      Notion Backlog — Updated Statuses
-    </div>
-    <div class="reveal">
-      <div class="backlog-row"><span class="priority-badge p-critical">Critical</span><span class="backlog-title">Implement Notion tool layer (CRUD for tasks, bugs, releases)</span><span class="status-chip s-done">✓ Done</span></div>
-      <div class="backlog-row"><span class="priority-badge p-high">High</span><span class="backlog-title">Bootstrap TypeScript project with shared tooling</span><span class="status-chip s-done">✓ Done</span></div>
-      <div class="backlog-row"><span class="priority-badge p-high">High</span><span class="backlog-title">Implement GitHub tool layer (branches, PRs, status checks)</span><span class="status-chip s-done">✓ Done</span></div>
-      <div class="backlog-row"><span class="priority-badge p-medium">Medium</span><span class="backlog-title">Define shared TypeScript types for all agents</span><span class="status-chip s-done">✓ Done</span></div>
-      <div class="backlog-row"><span class="priority-badge p-medium">Medium</span><span class="backlog-title">Add Notion and GitHub CLI wrappers for agent shell invocation</span><span class="status-chip s-done">✓ Done</span></div>
-      <div class="backlog-row"><span class="priority-badge p-medium">Medium</span><span class="backlog-title">One-time Notion workspace setup script</span><span class="status-chip s-done">✓ Done</span></div>
-      <div class="backlog-row"><span class="priority-badge p-high">High</span><span class="backlog-title">Build PM/PO agent with backlog creation and prioritization</span><span class="status-chip s-backlog">Backlog</span></div>
-      <div class="backlog-row"><span class="priority-badge p-high">High</span><span class="backlog-title">Build Software Engineer agent with branch and PR automation</span><span class="status-chip s-backlog">Backlog</span></div>
-      <div class="backlog-row"><span class="priority-badge p-high">High</span><span class="backlog-title">Build QA agent with bug filing and release report generation</span><span class="status-chip s-backlog">Backlog</span></div>
-      <div class="backlog-row"><span class="priority-badge p-high">High</span><span class="backlog-title">Build orchestrator that coordinates all three agents</span><span class="status-chip s-backlog">Backlog</span></div>
-      <div class="backlog-row"><span class="priority-badge p-medium">Medium</span><span class="backlog-title">Write end-to-end demo script and README walkthrough</span><span class="status-chip s-backlog">Backlog</span></div>
-      <div class="backlog-row"><span class="priority-badge p-medium">Medium</span><span class="backlog-title">Research adaptive thinking configuration for claude-opus-4-6</span><span class="status-chip s-backlog">Backlog</span></div>
-      <div class="backlog-row"><span class="priority-badge p-low">Low</span><span class="backlog-title">Add error handling and retry logic to all tool calls</span><span class="status-chip s-backlog">Backlog</span></div>
-    </div>
-
-  </div>
+<section id="tech">
+<div class="container">
+<div style="max-width:620px;">
+<div class="s-label reveal"><i class="fa-solid fa-layer-group"></i> Technology</div>
+<h2 class="s-title reveal">Built on best-in-class tools</h2>
+<p class="s-sub reveal">Every component chosen for reliability, real-world applicability, and developer experience.</p>
+</div>
+<div class="tech-grid reveal">
+<div class="tcard" style="--tc:#d97756;"><span class="ticon" style="color:#d97756;">&#11044;</span><div class="tname2">Claude API</div><p class="tdesc">claude-opus-4-6 with adaptive thinking, tool use, prompt caching, and streaming. The reasoning engine behind all three agents.</p><span class="ttag">@anthropic-ai/sdk</span></div>
+<div class="tcard" style="--tc:#7c6ef7;"><span class="ticon" style="color:#7c6ef7;font-weight:900;font-family:Inter,sans-serif;">N</span><div class="tname2">Notion</div><p class="tdesc">Shared persistent brain &mdash; Backlog, Bug Reports, and Releases databases all agents read and write in real time.</p><span class="ttag">@notionhq/client</span></div>
+<div class="tcard" style="--tc:#e6e6e6;"><span class="ticon"><i class="fa-brands fa-github" style="color:#e6e6e6;"></i></span><div class="tname2">GitHub</div><p class="tdesc">SE agent creates branches and draft PRs programmatically. Releases are tagged when QA issues a GO verdict.</p><span class="ttag">@octokit/rest</span></div>
+<div class="tcard" style="--tc:#3178c6;"><span class="ticon"><i class="fa-brands fa-js" style="color:#3178c6;"></i></span><div class="tname2">TypeScript</div><p class="tdesc">Strongly-typed end-to-end &mdash; agent tool definitions, Notion schemas, GitHub payloads. Runs on Node.js with ts-node.</p><span class="ttag">TypeScript 5 &middot; Node.js</span></div>
+</div>
+</div>
 </section>
-
-<!-- STACK -->
-<section id="stack">
-  <div class="center reveal">
-    <span class="section-label">Technology</span>
-    <h2>Built on Best-in-Class Tools</h2>
-    <p class="section-sub">Every component chosen for reliability, developer ergonomics, and production readiness.</p>
-    <div class="stack-grid">
-      <div class="stack-card"><i class="fa-solid fa-brain" style="color:var(--accent)"></i> Claude Opus 4.6</div>
-      <div class="stack-card"><i class="fab fa-js" style="color:#fbbf24"></i> TypeScript</div>
-      <div class="stack-card"><i class="fa-solid fa-n" style="color:#e2e8f0"></i> Notion API</div>
-      <div class="stack-card"><i class="fab fa-github" style="color:#e2e8f0"></i> GitHub API</div>
-      <div class="stack-card"><i class="fa-solid fa-bolt" style="color:var(--accent2)"></i> Adaptive Thinking</div>
-      <div class="stack-card"><i class="fa-solid fa-user-check" style="color:var(--accent3)"></i> Human-in-the-Loop</div>
-    </div>
-  </div>
+<section id="cta"><div class="container"><div class="cta-box reveal">
+<h2>Ready to see the agents run?</h2>
+<p>The full source is open &mdash; clone the repo, add your API keys, and watch three Claude agents ship a feature in under two minutes.</p>
+<div class="cta-btns">
+<a href="https://github.com/Kzis/claude-ai-agent-poc" target="_blank" class="btn-p"><i class="fa-brands fa-github"></i> View Source on GitHub</a>
+<a href="https://github.com/Kzis/claude-ai-agent-poc#quick-start" target="_blank" class="btn-s"><i class="fa-solid fa-book-open"></i> Quick Start Guide</a>
+</div>
+</div>
+</div>
 </section>
-
-<!-- CTA -->
-<section class="cta-section">
-  <div class="cta-inner reveal">
-    <span class="section-label">Get Started</span>
-    <h2>See the Future of Software Delivery</h2>
-    <p>The full source code is open. Clone the repo, set up your Notion workspace, and run your own autonomous dev team in under 10 minutes.</p>
-    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
-      <a href="https://github.com/Kzis/claude-ai-agent-poc" class="btn-primary" target="_blank">
-        <i class="fab fa-github"></i> View Source on GitHub
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
 <footer>
-  Built with <a href="https://www.anthropic.com" target="_blank">Claude Opus 4.6</a> &nbsp;·&nbsp;
-  <a href="https://github.com/Kzis/claude-ai-agent-poc" target="_blank">github.com/Kzis/claude-ai-agent-poc</a>
+<div class="fbrand">AutonomousDevTeam &mdash; claude-ai-agent-poc</div>
+<ul class="flinks">
+<li><a href="https://github.com/Kzis/claude-ai-agent-poc" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a></li>
+<li><a href="https://github.com/Kzis/claude-ai-agent-poc/blob/main/README.md" target="_blank">Docs</a></li>
+<li><a href="https://www.anthropic.com" target="_blank">Anthropic</a></li>
+</ul>
 </footer>
-
 <script>
-  // Scroll reveal
-  const observer = new IntersectionObserver(
-    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
-    { threshold: 0.12 }
-  );
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+(function(){
+var obs=new IntersectionObserver(function(ent){ent.forEach(function(e){if(e.isIntersecting){e.target.classList.add("vis");obs.unobserve(e.target);}});},{threshold:0.07});
+document.querySelectorAll(".reveal").forEach(function(el){obs.observe(el);});
+var lg=document.getElementById("log");if(lg)lg.scrollTop=lg.scrollHeight;
+var sc=document.querySelectorAll("section[id]");
+var nl=document.querySelectorAll(".nav-links a");
+window.addEventListener("scroll",function(){var c="";sc.forEach(function(s){if(window.scrollY>=s.offsetTop-80)c=s.id;});nl.forEach(function(a){var h=a.getAttribute("href");if(h&&h[0]==="#")a.style.color=h==="#"+c?"var(--t1)":"";});},{passive:true});
+})();
 </script>
 </body>
 </html>

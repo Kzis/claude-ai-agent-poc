@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env
+*.js.map
+
+# scratch scripts
+fix*.js
+gen_*.js
+se_fix*.js
+sefix.js
+write-se.js
+
+# test files
+test*.txt
+
+# Claude Code
+.claude/

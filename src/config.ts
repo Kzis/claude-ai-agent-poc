@@ -21,6 +21,7 @@ export const config = {
     backlogDbId: optional("NOTION_BACKLOG_DB_ID"),
     bugReportsDbId: optional("NOTION_BUG_REPORTS_DB_ID"),
     releasesDbId: optional("NOTION_RELEASES_DB_ID"),
+    metricsDbId: optional("NOTION_METRICS_DB_ID"),
   },
   github: {
     token: required("GITHUB_TOKEN"),

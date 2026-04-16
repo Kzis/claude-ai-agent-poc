@@ -126,6 +126,12 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
   let resolvedBranch: string | undefined;
   let resolvedPrUrl: string | undefined;
 
+  // Metrics tracking
+  const startTime = Date.now();
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+  let totalThinkingTokens = 0;
+
   while (iteration < maxIterations) {
     iteration++;
 
@@ -137,6 +143,13 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
       tools,
       messages,
     });
+
+    // Track token usage per iteration
+    totalInputTokens += response.usage?.input_tokens ?? 0;
+    totalOutputTokens += response.usage?.output_tokens ?? 0;
+    for (const block of response.content) {
+      if (block.type === "thinking") totalThinkingTokens += block.thinking?.length ?? 0;
+    }
 
     console.log("[SE Agent] Iter " + String(iteration) + " stop_reason=" + response.stop_reason);
 
@@ -183,6 +196,29 @@ export async function run(input: SeRunInput = {}): Promise<SeRunResult> {
   if (iteration >= maxIterations) console.warn("[SE Agent] Max iterations reached.");
 
   console.log("[SE Agent] Complete.");
+
+  // Emit metrics (metrics.ts may not exist yet -- wrapped in try/catch)
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const metricsModule = await import("../tools/metrics") as any;
+    await metricsModule.createMetric({
+      agentName: "SE",
+      taskId: resolvedTask?.id ?? "unknown",
+      taskTitle: resolvedTask?.title ?? "unknown",
+      status: "completed",
+      model: config.anthropic.model,
+      inputTokens: totalInputTokens,
+      outputTokens: totalOutputTokens,
+      thinkingTokens: totalThinkingTokens,
+      totalTokens: totalInputTokens + totalOutputTokens + totalThinkingTokens,
+      costUsd: metricsModule.calculateCost(totalInputTokens, totalOutputTokens, totalThinkingTokens),
+      durationMs: Date.now() - startTime,
+      releaseId: input.release ?? "Release-2",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.warn("[SE Agent] Could not emit metrics:", e);
+  }
 
   return { success: true, task: resolvedTask, branchName: resolvedBranch, prUrl: resolvedPrUrl };
 }

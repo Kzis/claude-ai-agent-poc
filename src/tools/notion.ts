@@ -438,3 +438,129 @@ export async function getReleases(filter?: { status?: ReleaseStatus }): Promise<
     return { success: false, error: String(err) };
   }
 }
+
+// ─── Metrics Database ─────────────────────────────────────────────────────────
+
+export async function createMetricsDb(): Promise<string> {
+  const db = await notion.databases.create({
+    parent: { type: "page_id", page_id: config.notion.parentPageId },
+    title: [{ type: "text", text: { content: "📊 Agent Metrics" } }],
+    properties: {
+      Name: { title: {} },
+      Agent: {
+        select: {
+          options: [
+            { name: "PM/PO", color: "blue" },
+            { name: "SE", color: "green" },
+            { name: "QA", color: "purple" },
+          ],
+        },
+      },
+      Status: {
+        select: {
+          options: [
+            { name: "started", color: "yellow" },
+            { name: "completed", color: "green" },
+            { name: "failed", color: "red" },
+          ],
+        },
+      },
+      "Task ID": { rich_text: {} },
+      "Task Title": { rich_text: {} },
+      Model: { rich_text: {} },
+      "Input Tokens": { number: { format: "number" } },
+      "Output Tokens": { number: { format: "number" } },
+      "Thinking Tokens": { number: { format: "number" } },
+      "Total Tokens": { number: { format: "number" } },
+      "Cost USD": { number: { format: "number" } },
+      "Duration Ms": { number: { format: "number" } },
+      "Release ID": { rich_text: {} },
+      Timestamp: { rich_text: {} },
+      Notes: { rich_text: {} },
+    },
+  });
+  return db.id;
+}
+
+// ─── Metrics CRUD ─────────────────────────────────────────────────────────────
+
+import type { AgentMetrics } from "./types";
+
+type MetricsPage = {
+  id: string;
+  created_time: string;
+  properties: Record<string, NotionProp & { number?: number }>;
+};
+
+function pageToMetric(page: Record<string, unknown>): AgentMetrics {
+  const p = page as unknown as MetricsPage;
+  const props = p.properties;
+  return {
+    id: p.id,
+    agentName: (props.Agent?.select?.name ?? "SE") as AgentMetrics["agentName"],
+    taskId: props["Task ID"]?.rich_text?.[0]?.plain_text ?? "",
+    taskTitle: props["Task Title"]?.rich_text?.[0]?.plain_text ?? "",
+    status: (props.Status?.select?.name ?? "completed") as AgentMetrics["status"],
+    model: props.Model?.rich_text?.[0]?.plain_text ?? "",
+    inputTokens: props["Input Tokens"]?.number ?? 0,
+    outputTokens: props["Output Tokens"]?.number ?? 0,
+    thinkingTokens: props["Thinking Tokens"]?.number ?? 0,
+    totalTokens: props["Total Tokens"]?.number ?? 0,
+    costUsd: props["Cost USD"]?.number ?? 0,
+    durationMs: props["Duration Ms"]?.number ?? 0,
+    releaseId: props["Release ID"]?.rich_text?.[0]?.plain_text ?? "",
+    timestamp: props.Timestamp?.rich_text?.[0]?.plain_text ?? p.created_time,
+    notes: props.Notes?.rich_text?.[0]?.plain_text ?? "",
+  };
+}
+
+export async function createAgentMetric(metric: AgentMetrics): Promise<ToolResult> {
+  try {
+    const dbId = config.notion.metricsDbId;
+    if (!dbId) return { success: false, error: "NOTION_METRICS_DB_ID not set" };
+    const label = `[${metric.agentName}] ${metric.taskTitle} @ ${new Date(metric.timestamp).toLocaleTimeString()}`;
+    const page = await notion.pages.create({
+      parent: { database_id: dbId },
+      properties: {
+        Name: { title: [{ text: { content: label } }] },
+        Agent: { select: { name: metric.agentName } },
+        Status: { select: { name: metric.status } },
+        "Task ID": { rich_text: [{ text: { content: metric.taskId } }] },
+        "Task Title": { rich_text: [{ text: { content: metric.taskTitle } }] },
+        Model: { rich_text: [{ text: { content: metric.model } }] },
+        "Input Tokens": { number: metric.inputTokens },
+        "Output Tokens": { number: metric.outputTokens },
+        "Thinking Tokens": { number: metric.thinkingTokens },
+        "Total Tokens": { number: metric.totalTokens },
+        "Cost USD": { number: metric.costUsd },
+        "Duration Ms": { number: metric.durationMs },
+        "Release ID": { rich_text: [{ text: { content: metric.releaseId } }] },
+        Timestamp: { rich_text: [{ text: { content: metric.timestamp } }] },
+        Notes: { rich_text: [{ text: { content: metric.notes ?? "" } }] },
+      },
+    });
+    return { success: true, data: pageToMetric(page as Record<string, unknown>) };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+}
+
+export async function getAgentMetrics(filter?: { releaseId?: string; agentName?: string }): Promise<ToolResult> {
+  try {
+    const dbId = config.notion.metricsDbId;
+    if (!dbId) return { success: false, error: "NOTION_METRICS_DB_ID not set" };
+
+    const clauses: NonNullable<NotionFilter>[] = [];
+    if (filter?.releaseId) clauses.push({ property: "Release ID", rich_text: { contains: filter.releaseId } });
+    if (filter?.agentName) clauses.push({ property: "Agent", select: { equals: filter.agentName } });
+
+    const response = await notion.databases.query({
+      database_id: dbId,
+      filter: buildAndFilter(clauses),
+      sorts: [{ timestamp: "created_time", direction: "descending" }],
+    });
+    return { success: true, data: response.results.map((p) => pageToMetric(p as Record<string, unknown>)) };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+}

@@ -124,6 +124,12 @@ export async function run(input: PmRunInput): Promise<PmRunResult> {
   const tasksCreated: Task[] = [];
   const criticalCount = { value: 0 };
 
+  // Metrics tracking
+  const startTime = Date.now();
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+  let totalThinkingTokens = 0;
+
   console.log("[PM Agent] Starting for release " + release);
 
   const systemPrompt =
@@ -165,6 +171,13 @@ export async function run(input: PmRunInput): Promise<PmRunResult> {
       tools,
       messages,
     });
+
+    // Track token usage per iteration
+    totalInputTokens += response.usage?.input_tokens ?? 0;
+    totalOutputTokens += response.usage?.output_tokens ?? 0;
+    for (const block of response.content) {
+      if (block.type === "thinking") totalThinkingTokens += block.thinking?.length ?? 0;
+    }
 
     console.log(
       "[PM Agent] Iteration " + String(iteration) + ": stop_reason=" + response.stop_reason
@@ -219,6 +232,30 @@ export async function run(input: PmRunInput): Promise<PmRunResult> {
     "[PM Agent] Complete. Created " + String(tasksCreated.length) + " task(s), " +
       String(criticalCount.value) + " Critical."
   );
+
+  // Emit metrics (metrics.ts may not exist yet -- wrapped in try/catch)
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const metricsModule = await import("../tools/metrics") as any;
+    const firstTask = tasksCreated[0];
+    await metricsModule.createMetric({
+      agentName: "PM/PO",
+      taskId: firstTask?.id ?? "unknown",
+      taskTitle: firstTask?.title ?? "unknown",
+      status: "completed",
+      model: config.anthropic.model,
+      inputTokens: totalInputTokens,
+      outputTokens: totalOutputTokens,
+      thinkingTokens: totalThinkingTokens,
+      totalTokens: totalInputTokens + totalOutputTokens + totalThinkingTokens,
+      costUsd: metricsModule.calculateCost(totalInputTokens, totalOutputTokens, totalThinkingTokens),
+      durationMs: Date.now() - startTime,
+      releaseId: input.release ?? "Release-2",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.warn("[PM Agent] Could not emit metrics:", e);
+  }
 
   return {
     success: true,
