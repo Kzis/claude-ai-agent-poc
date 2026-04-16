@@ -1,9 +1,9 @@
 {
-  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-04-16T04:13:01.549Z",
   "agents": {
     "PM/PO": {
-      "status": "idle",
-      "currentAction": "",
+      "status": "running",
+      "currentAction": "Starting…",
       "iteration": 0,
       "inputTokens": 0,
       "outputTokens": 0,
@@ -11,10 +11,10 @@
       "totalTokens": 0,
       "costUsd": 0,
       "durationMs": 0,
-      "startedAt": null,
+      "startedAt": "2026-04-16T04:13:01.037Z",
       "completedAt": null,
-      "taskTitle": "",
-      "release": ""
+      "taskTitle": "Release-2: Add live agent instrumentation — track token usage, cost per run, dur",
+      "release": "Release-1"
     },
     "SE": {
       "status": "idle",
