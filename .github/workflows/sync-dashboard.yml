@@ -25,15 +25,16 @@ jobs:
 
       - name: Sync Notion → docs/live.json
         env:
-          ANTHROPIC_API_KEY:       ${{ secrets.ANTHROPIC_API_KEY }}
-          NOTION_API_KEY:          ${{ secrets.NOTION_API_KEY }}
-          NOTION_PARENT_PAGE_ID:   ${{ secrets.NOTION_PARENT_PAGE_ID }}
-          NOTION_BACKLOG_DB_ID:    ${{ secrets.NOTION_BACKLOG_DB_ID }}
+          ANTHROPIC_API_KEY:        ${{ secrets.ANTHROPIC_API_KEY }}
+          NOTION_API_KEY:           ${{ secrets.NOTION_API_KEY }}
+          NOTION_PARENT_PAGE_ID:    ${{ secrets.NOTION_PARENT_PAGE_ID }}
+          NOTION_BACKLOG_DB_ID:     ${{ secrets.NOTION_BACKLOG_DB_ID }}
           NOTION_BUG_REPORTS_DB_ID: ${{ secrets.NOTION_BUG_REPORTS_DB_ID }}
-          NOTION_RELEASES_DB_ID:   ${{ secrets.NOTION_RELEASES_DB_ID }}
-          NOTION_METRICS_DB_ID:    ${{ secrets.NOTION_METRICS_DB_ID }}
-          GITHUB_TOKEN:            ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_OWNER:            ${{ github.repository_owner }}
-          GITHUB_REPO:             ${{ github.event.repository.name }}
-          GITHUB_BASE_BRANCH:      main
+          NOTION_RELEASES_DB_ID:    ${{ secrets.NOTION_RELEASES_DB_ID }}
+          NOTION_METRICS_DB_ID:     ${{ secrets.NOTION_METRICS_DB_ID }}
+          # GitHub vars — no secrets needed, Actions provides these automatically
+          GH_TOKEN:       ${{ secrets.GITHUB_TOKEN }}
+          GH_OWNER:       ${{ github.repository_owner }}
+          GH_REPO:        ${{ github.event.repository.name }}
+          GH_BASE_BRANCH: main
         run: npx ts-node src/cli/sync-dashboard.ts

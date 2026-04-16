@@ -24,9 +24,9 @@ export const config = {
     metricsDbId: optional("NOTION_METRICS_DB_ID"),
   },
   github: {
-    token: required("GITHUB_TOKEN"),
-    owner: required("GITHUB_OWNER"),
-    repo: required("GITHUB_REPO"),
-    baseBranch: optional("GITHUB_BASE_BRANCH", "main"),
+    token: required("GH_TOKEN"),
+    owner: required("GH_OWNER"),
+    repo: required("GH_REPO"),
+    baseBranch: optional("GH_BASE_BRANCH", "main"),
   },
 };
